@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// read from command line
-	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil{
+	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
 		log.Fatal(err)
 	}
 
@@ -43,7 +43,9 @@ func main() {
 	log.Println("starting server at port", port)
 	http.HandleFunc("/", app.Home)
 	http.HandleFunc("/books/id", app.AllBooks)
-	http.HandleFunc("/login",app.Login)
+	http.HandleFunc("/login", app.Login)
+	http.HandleFunc("/genres", app.Genre)
+	http.HandleFunc("/signin", app.Signin)
 
 	// start a web server
 	ds := http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())

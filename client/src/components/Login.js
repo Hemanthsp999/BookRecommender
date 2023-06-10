@@ -41,7 +41,7 @@ const Login = () => {
     e.preventDefault();
     
     try {
-    axios.post('http://localhost:8080/login', {
+    axios.get('http://localhost:8080/login', {
       msg
     })
     }
@@ -55,7 +55,7 @@ const Login = () => {
       <h2>Login</h2>
       <hr />
 
-      <form action="GET" onSubmit={handleSubmit} >
+      <form action="/login" method="GET" onSubmit={handleSubmit} >
         <Input
           title="Email Address"
           type="email"

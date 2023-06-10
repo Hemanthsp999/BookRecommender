@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 func (app *application) Home(w http.ResponseWriter, r *http.Request) {
@@ -72,40 +73,71 @@ func (app *application) AllBooks(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Below this is
+// server to handle Login credentials
+
 func (app *application) Login(w http.ResponseWriter, r *http.Request) {
 
-	type store struct {
-		userName string
-		password string
-	}
+	const myUrl = "http://localhost:8080/login"
 
+}
+
+// server to handle Genres
+
+func (app *application) Genre(w http.ResponseWriter, r *http.Request){
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017/"))
-	if err != nil {
+	if err != nil{
 		log.Fatal(err)
 	}
 
-	db := client.Database("public").Collection("user")
+	col := client.Database("public").Collection("genres")
 
-	fmt.Println(db)
+	cur, err := col.Find(context.Background(), bson.D{{}})
+	 
+	fmt.Println(cur)
 
-	if r.Method != "GET" {
-		fmt.Fprint(w, "404 Error", http.StatusNotFound)
-	}
 
-	email := r.FormValue("email")
-	pass := r.FormValue("password")
+}
 
-	filter := bson.D{ {email, pass} }
 
-	var result store
+func (app *application) Signin(w http.ResponseWriter, r *http.Request) {
 
-	err = db.FindOne(context.Background(), filter).Decode(&result)
+	fmt.Fprintf(w,"Connected successfully")
 
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.2"))
 	if err != nil {
-		if err == mongo.ErrNoDocuments{
-			// this error means your query did not match any documents
-			return 
-		}
 		panic(err)
 	}
+
+	// ping() method 
+	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+		panic(err)
+	}
+
+	// accessing database and collection already existed
+	userCollection := client.Database("public").Collection("user")
+
+	fName := r.FormValue("fname")
+	lName := r.FormValue("lname")
+	email := r.FormValue("email")
+	// repassword value is not taken 
+	pass := r.FormValue("pass")
+
+	// creating bson users slice
+	user := []interface{}{
+		bson.D{{"firstName",fName},{"lastName", lName}, {"email", email},{"Password", pass}},
+	}
+
+	result, err := userCollection.InsertMany(context.TODO(), user)
+	if err != nil {
+		// check for error in insertion
+		panic(err)
+	}
+
+	// display the ids of the newly inserted objects
+
+	fmt.Println(result.InsertedIDs...)
+
+
+
 }

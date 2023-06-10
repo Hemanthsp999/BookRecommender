@@ -22,5 +22,8 @@ func (app *application) routes() http.Handler {
 
 	mux.Get("/login", app.Login)
 
+	mux.Get("/genres", app.Genre)
+
+	mux.Post("/signin", app.Signin)
 	return mux
 }

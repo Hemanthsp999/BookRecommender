@@ -9,6 +9,7 @@ import ErrorPage from "./components/ErrorPage";
 import Books from "./components/Books";
 import Book from "./components/Book";
 import Fav from './components/Fav';
+import Registration from './components/Registration';
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
       {
         path: "/login",
         element: <Login />,
+      },
+      {
+        path: "/signup",
+        element: <Registration />
       }
     ]
   },

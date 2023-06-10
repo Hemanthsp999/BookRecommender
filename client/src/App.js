@@ -12,15 +12,19 @@ function App() {
   const logOut = () => {
     setJwtToken("");
     navigate("/login");
-  }
+  };
 
   return (
     <div className="container">
       <div className="row">
         <div className="col">
-          <h1 className="mt-3">Read a book to get strong</h1>
+          <h1 className="mt-3">Read some books</h1>
         </div>
         <div className="col text-end">
+          <Link to="/signup">
+            {" "}
+            <span className="badge bg-success">SignIn</span>
+          </Link>
           {jwtToken === "" ? (
             <Link to="/login">
               <span className="badge bg-success">Login</span>
