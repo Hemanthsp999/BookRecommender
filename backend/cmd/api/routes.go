@@ -24,6 +24,6 @@ func (app *application) routes() http.Handler {
 
 	mux.Get("/genres", app.Genre)
 
-	mux.Post("/signin", app.Signin)
+	mux.Post("/signup", app.SignUp)
 	return mux
 }

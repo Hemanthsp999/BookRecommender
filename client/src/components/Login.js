@@ -1,5 +1,5 @@
 import axios from "axios";
-import {  useState } from "react";
+import { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import Input from "./form/Input";
 
@@ -21,7 +21,7 @@ const Login = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log("email / pass ", email, password);
-    navigate("/")
+    navigate("/");
 
     /*
     if (email === setEmail) {
@@ -37,25 +37,24 @@ const Login = () => {
     */
   };
 
-  var requestSubmit = async(e) => {
+  var requestSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
-    axios.get('http://localhost:8080/login', {
-      msg
-    })
+      axios('http://localhost:8080/login', {
+        msg,
+      });
+    } catch (e) {
+      console.log(e);
     }
-    catch(e){
-      console.log(e)
-    }
-  }
+  };
 
   return (
     <div className="col-md-6 offset-md-3">
       <h2>Login</h2>
       <hr />
 
-      <form action="/login" method="GET" onSubmit={handleSubmit} >
+      <form action="/login" method="GET" onSubmit={handleSubmit}>
         <Input
           title="Email Address"
           type="email"
@@ -74,7 +73,12 @@ const Login = () => {
         />
         <hr />
 
-        <input type="submit" className="btn btn-primary" value="Login" onClick={requestSubmit} />
+        <input
+          type="submit"
+          className="btn btn-primary"
+          value="Login"
+          onClick={requestSubmit}
+        />
       </form>
     </div>
   );

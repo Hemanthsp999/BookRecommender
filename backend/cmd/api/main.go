@@ -45,7 +45,7 @@ func main() {
 	http.HandleFunc("/books/id", app.AllBooks)
 	http.HandleFunc("/login", app.Login)
 	http.HandleFunc("/genres", app.Genre)
-	http.HandleFunc("/signin", app.Signin)
+	http.HandleFunc("/signup", app.SignUp)
 
 	// start a web server
 	ds := http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())

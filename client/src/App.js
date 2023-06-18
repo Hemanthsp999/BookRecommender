@@ -23,7 +23,7 @@ function App() {
         <div className="col text-end">
           <Link to="/signup">
             {" "}
-            <span className="badge bg-success">SignIn</span>
+            <span className="badge bg-success">Sign Up</span>
           </Link>
           {jwtToken === "" ? (
             <Link to="/login">

@@ -3,41 +3,40 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Registration = () => {
-
-  const[fname, setFname] = useState('');
-  const[lname, setLname] = useState('');
-  const[pass, setPass] = useState('');
-  const[email, setEmail] = useState('');
-  const[msg, setMsg] = useState('');
+  const [fname, setFname] = useState("");
+  const [lname, setLname] = useState("");
+  const [pass, setPass] = useState("");
+  const [email, setEmail] = useState("");
+  const [msg, setMsg] = useState("");
 
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("fname/lname/email/pass", fname, lname, email, pass);
+    setMsg([]);
   };
 
   const requestOption = (e) => {
     e.preventDefault();
 
-    try{
-      axios.post('http://localhost:8080/signin', {
-        msg
-      })
-
-    }
-    catch(e){
+    try {
+      console.log(fname);
+      axios.interceptors(`http://localhost:8080/signup`, {
+        msg,
+      });
+    } catch (e) {
       console.log(e);
     }
-    
-  }
+    navigate("/login");
+  };
 
   return (
     <div className="col-md-6 offset-md-3">
-      <h2>Sign In</h2>
+      <h2>Sign Up</h2>
       <hr />
 
-      <form action="/signin" method="POST" onChange={handleSubmit} >
+      <form action="/signin" method="POST" onChange={handleSubmit}>
         <label>FirstName</label>
         <input
           type="text"
@@ -92,7 +91,7 @@ const Registration = () => {
           type="submit"
           name="submit"
           className="btn btn-primary"
-          value="sign in"
+          value="Sign Up"
           onClick={requestOption}
         />
       </form>

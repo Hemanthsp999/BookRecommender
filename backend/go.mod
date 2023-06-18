@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/go-chi/chi/v5 v5.0.8
-	go.mongodb.org/mongo-driver v1.11.6
+	go.mongodb.org/mongo-driver v1.11.7
 	golang.org/x/tools v0.8.1-0.20230421161920-b9619ee54b47
 )
 
