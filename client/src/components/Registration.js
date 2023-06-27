@@ -1,3 +1,4 @@
+import { wait } from "@testing-library/user-event/dist/utils";
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,28 +8,54 @@ const Registration = () => {
   const [lname, setLname] = useState("");
   const [pass, setPass] = useState("");
   const [email, setEmail] = useState("");
-  const [msg, setMsg] = useState("");
+  //const [msg, setMsg] = useState("");
+
+  const onChangefName = (e) => {
+    setFname({ fname: e.target.value });
+  };
+
+  const onChangelName = (e) => {
+    setLname({ lname: e.target.value });
+  };
+
+  // getting email from user
+  const onChangeEmail = (e) => {
+    setEmail({ email: e.target.value });
+  };
+
+  // getting password from user
+
+  const onChangePass = (e) => {
+    setPass({ pass: e.target.value });
+  };
 
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("fname/lname/email/pass", fname, lname, email, pass);
-    setMsg([]);
-  };
 
-  const requestOption = (e) => {
-    e.preventDefault();
+    const dataSubmit = {
+      fname: fname ,
+      lname: lname ,
+      email: email ,
+      pass: pass   ,
+    };
+    console.log(dataSubmit);
 
-    try {
-      console.log(fname);
-      axios.interceptors(`http://localhost:8080/signup`, {
-        msg,
-      });
-    } catch (e) {
-      console.log(e);
-    }
-    navigate("/login");
+    // connecting frontend to backend(signup form)
+
+    axios
+      .post("http://localhost:8080/signup", {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: { dataSubmit },
+      })
+
+      .then((response) => console.log(response))
+      .catch((error) => console.log("form error", error));
   };
 
   return (
@@ -36,38 +63,41 @@ const Registration = () => {
       <h2>Sign Up</h2>
       <hr />
 
-      <form action="/signin" method="POST" onChange={handleSubmit}>
+      <form action="/signup" method="POST" onSubmit={handleSubmit}>
         <label>FirstName</label>
         <input
           type="text"
-          name="fname"
+          name="fName"
           placeholder="Enter First Name"
           className="form-control"
           autoComplete="name-new"
-          onChange={(e) => setFname(e.target.value)}
+          onChange={onChangefName}
+          required
         />
         <br />
         <label>Last Name</label>
         <input
           type="text"
-          name="lname"
+          name="lName"
           placeholder="Enter Last Name"
           className="form-control"
           autoComplete="name-new"
-          onChange={(e) => setLname(e.target.value)}
+          onChange={onChangelName}
+          required
         />
         <br />
-        <label htmlFor="email">Email Address</label>
+        <label>Email Address</label>
         <input
           type="email"
           name="email"
           placeholder="Enter Email Address"
           className="form-control"
           autoComplete="email-new"
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={onChangeEmail}
+          required
         />
         <br />
-        <label htmlFor="pass">Password</label>
+        <label>Password</label>
         <input
           type="password"
           name="pass"
@@ -75,10 +105,11 @@ const Registration = () => {
           minLength={5}
           className="form-control"
           autoComplete="password-new"
-          onChange={(e) => setPass(e.target.value)}
+          onChange={onChangePass}
+          required
         />
         <br />
-        <label htmlFor="repass">Re-Enter Password</label>
+        <label>Re-Enter Password</label>
         <input
           type="password"
           name="pass"
@@ -92,7 +123,6 @@ const Registration = () => {
           name="submit"
           className="btn btn-primary"
           value="Sign Up"
-          onClick={requestOption}
         />
       </form>
     </div>

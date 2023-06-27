@@ -9,9 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	//	"go.mongodb.org/mongo-driver/bson"
-	//	"go.mongodb.org/mongo-driver/bson"
-	//	"go.mongodb.org/mongo-driver/bson"
 	//	"go.mongodb.org/mongo-driver/bson/primitive"
 	//"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson"
@@ -113,64 +110,65 @@ func toDoc(v interface{}) (doc *bson.D, err error) {
 	return
 }
 
+type User struct {
+	FristName string `json:"fName"`
+	LastName  string `json:"lName"`
+	Email     string `json:"email"`
+	Password  string `json:"pass"`
+}
+
 func (app *application) SignUp(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Successfully connected to database %v", http.StatusOK)
 
-	fmt.Fprintf(w, "Connected successfully")
+	// connecting to database through uri
+	clientOptions := options.Client().ApplyURI("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.2")
 
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.2"))
+	// connect to mongodb
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
-	// ping() method
-	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
-		panic(err)
-	}
+	// check the connection
+	ctx, _ := context.WithTimeout(context.TODO(), 10*time.Second)
 
-	// accessing database and collection already existed
-	userCollection := client.Database("public").Collection("user")
+	err = client.Ping(context.TODO(), readpref.Primary())
 
-	type user struct {
-		FirstName string `bson:"firstName"`
-		LastName  string `bson:"lastName"`
-		Email     string `bson:"email"`
-		Password  string `bson:"pass"`
-	}
-
-	/*
-	fName := r.FormValue("fname")
-	lName := r.FormValue("lname")
-	email := r.FormValue("email")
-	// repassword value is not taken
-	pass := r.FormValue("pass")
-	*/
-
-	p := user{
-		FirstName: r.FormValue("fname"),
-		LastName: r.FormValue("lname"),
-		Email: r.FormValue("email"),
-		Password: r.FormValue("pass"),
-	}
-
-	User, err := bson.Marshal(p)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("connected to MONGODB!")
 
-	var data user
-	err1 := bson.Unmarshal(User, &data)
-	log.Println(err1)
-	// creating bson users slice
-	fmt.Println(p)
+	dataBase := client.Database("public").Collection("user")
 
-	result, err := userCollection.InsertOne(context.TODO(), err1)
-	fmt.Println(data)
-	if err != nil {
-		// check for error in insertion
-		panic(err)
+	// Disconnecting from database client.Disconnect
+	defer client.Disconnect(context.TODO())
+
+	fmt.Println("Connection to mongodb database is closed", ctx)
+
+	person := User{
+		FristName: r.FormValue("fName"),
+		LastName:  r.FormValue("lName"),
+		Email:     r.FormValue("email"),
+		Password:  r.FormValue("pass"),
 	}
-	// display the ids of the newly inserted objects
 
-	fmt.Println(result.InsertedID)
+	encodeToJosn, err := json.Marshal(person)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(encodeToJosn))
+
+	var store User
+	checkValid := json.Valid(encodeToJosn)
+	if checkValid {
+		fmt.Println("this is valid json format")
+		json.Unmarshal(encodeToJosn, &store)
+		fmt.Printf("%v\n",store)
+	}
+
+	collection, _ := dataBase.InsertOne(context.Background(), store)
+
+	fmt.Println(collection.InsertedID)
 
 }
