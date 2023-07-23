@@ -27,11 +27,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx,_ := context.WithTimeout(context.Background(), 10*time.Second)
 	err = client.Connect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	client.Connect(ctx)
 
 	// read from command line
 	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
@@ -45,7 +47,7 @@ func main() {
 	http.HandleFunc("/books/id", app.AllBooks)
 	http.HandleFunc("/login", app.Login)
 	http.HandleFunc("/genres", app.Genre)
-	http.HandleFunc("/signup", app.SignUp)
+	http.HandleFunc("/signup", SignUp)
 
 	// start a web server
 	ds := http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())

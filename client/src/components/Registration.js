@@ -1,5 +1,3 @@
-import { wait } from "@testing-library/user-event/dist/utils";
-import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,7 +6,7 @@ const Registration = () => {
   const [lname, setLname] = useState("");
   const [pass, setPass] = useState("");
   const [email, setEmail] = useState("");
-  //const [msg, setMsg] = useState("");
+
 
   const onChangefName = (e) => {
     setFname({ fname: e.target.value });
@@ -31,31 +29,31 @@ const Registration = () => {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit =  async(e) => {
     e.preventDefault();
 
-    const dataSubmit = {
-      fname: fname ,
-      lname: lname ,
-      email: email ,
-      pass: pass   ,
-    };
-    console.log(dataSubmit);
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
 
-    // connecting frontend to backend(signup form)
+    console.log(fname,lname,email,pass);
 
-    axios
-      .post("http://localhost:8080/signup", {
-        method: "POST",
+    const body = {
+      fname: fname,
+      lname: lname,
+      email: email,
+      pass: pass
+    }
 
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: { dataSubmit },
-      })
-
-      .then((response) => console.log(response))
-      .catch((error) => console.log("form error", error));
+    fetch("http://localhost:8080/signup",{
+      method: 'POST',
+      body: body,
+      headers: headers,
+    })
+      .then((response) => response.json())
+      .then(data => console.log(data))
+      .catch((e) => {
+        console.error("There is an error in SERVER-SIDE ", e);
+      });
   };
 
   return (
@@ -63,11 +61,11 @@ const Registration = () => {
       <h2>Sign Up</h2>
       <hr />
 
-      <form action="/signup" method="POST" onSubmit={handleSubmit}>
+      <form action="/signup" method="post" onSubmit={handleSubmit} id="myForm">
         <label>FirstName</label>
         <input
           type="text"
-          name="fName"
+          name="firstName"
           placeholder="Enter First Name"
           className="form-control"
           autoComplete="name-new"
@@ -78,7 +76,7 @@ const Registration = () => {
         <label>Last Name</label>
         <input
           type="text"
-          name="lName"
+          name="lastName"
           placeholder="Enter Last Name"
           className="form-control"
           autoComplete="name-new"
