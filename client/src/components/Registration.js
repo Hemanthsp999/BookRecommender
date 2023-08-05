@@ -7,7 +7,6 @@ const Registration = () => {
   const [pass, setPass] = useState("");
   const [email, setEmail] = useState("");
 
-
   const onChangefName = (e) => {
     setFname({ fname: e.target.value });
   };
@@ -29,31 +28,30 @@ const Registration = () => {
 
   const navigate = useNavigate();
 
-  const handleSubmit =  async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
+    const JsonData = ({
+      fname,lname,email,pass
+    })
+    console.log(JsonData);
 
-    console.log(fname,lname,email,pass);
-
-    const body = {
-      fname: fname,
-      lname: lname,
-      email: email,
-      pass: pass
-    }
-
-    fetch("http://localhost:8080/signup",{
-      method: 'POST',
-      body: body,
-      headers: headers,
+    var obj = JSON.stringify(JsonData)
+    console.log(obj);
+    fetch(`http://localhost:8080/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body:obj,
     })
       .then((response) => response.json())
-      .then(data => console.log(data))
+      .then((data) => console.log(data))
       .catch((e) => {
-        console.error("There is an error in SERVER-SIDE ", e);
+        console.error(e);
       });
+    console.log(typeof JsonData);
+    console.log(typeof obj);
   };
 
   return (
@@ -65,7 +63,7 @@ const Registration = () => {
         <label>FirstName</label>
         <input
           type="text"
-          name="firstName"
+          name="FirstName"
           placeholder="Enter First Name"
           className="form-control"
           autoComplete="name-new"
@@ -76,7 +74,7 @@ const Registration = () => {
         <label>Last Name</label>
         <input
           type="text"
-          name="lastName"
+          name="LastName"
           placeholder="Enter Last Name"
           className="form-control"
           autoComplete="name-new"
@@ -87,7 +85,7 @@ const Registration = () => {
         <label>Email Address</label>
         <input
           type="email"
-          name="email"
+          name="Email"
           placeholder="Enter Email Address"
           className="form-control"
           autoComplete="email-new"
@@ -98,7 +96,7 @@ const Registration = () => {
         <label>Password</label>
         <input
           type="password"
-          name="pass"
+          name="Password"
           placeholder="Minimum 5 characters"
           minLength={5}
           className="form-control"
