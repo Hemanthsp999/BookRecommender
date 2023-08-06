@@ -9,12 +9,9 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	//	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	//	"golang.org/x/text/language"
 )
 
 func (app *application) Home(w http.ResponseWriter, r *http.Request) {
