@@ -38,10 +38,10 @@ const Registration = () => {
     ]);*/
 
       const demo = {
-        fname: fname.fname,
-        lname: lname.lname,
-        email: email.email,
-        pass: pass.pass,
+        "fname": fname.fname,
+        "lname": lname.lname,
+        "email": email.email,
+        "pass": pass.pass,
       };
 
       const JsonData = demo;
