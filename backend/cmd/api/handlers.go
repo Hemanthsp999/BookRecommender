@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/internal/models"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -109,7 +110,7 @@ func toDoc(v interface{}) (doc *bson.D, err error) {
 }
 
 type User struct {
-	FirstName string `json:"fname"`
+	FirstName string `json:"fname" bson:"FirstName, omitempty"`
 	LastName  string `json:"lname"`
 	Email     string `json:"email"`
 	Password  string `json:"pass"`
@@ -126,6 +127,18 @@ func (app *application) Signup(w http.ResponseWriter, r *http.Request) {
 		}
 
 		defer r.Body.Close()
+
+		clientOptions, err := mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.10.1"))
+
+		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		err = clientOptions.Connect(ctx)
+		if err != nil{
+			log.Panic(err)
+		}
+		defer clientOptions.Disconnect(ctx)
+
+		dataBase := clientOptions.Database("signup").Collection("userData")
+		
 
 		// PARSE BODY ITSELF
 		body, err := ioutil.ReadAll(r.Body)
@@ -166,6 +179,13 @@ func (app *application) Signup(w http.ResponseWriter, r *http.Request) {
 			unmarshalled := json.Unmarshal(marshalled, &user)
 			fmt.Println(w,"this is unmarshalled part",unmarshalled)
 		*/
+
+		insertCollection, err := dataBase.InsertOne(context.Background(),person)
+		if err != nil{
+			panic(err)
+		}
+
+		fmt.Println(insertCollection.InsertedID)
 
 		fmt.Printf("person %s\n", person)
 
