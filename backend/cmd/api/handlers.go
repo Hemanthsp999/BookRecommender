@@ -4,6 +4,7 @@ import (
 	"backend/internal/models"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -108,10 +109,10 @@ func toDoc(v interface{}) (doc *bson.D, err error) {
 }
 
 type User struct {
-	FirstName string `json:"FirstName"`
-	LastName  string `json:"LastName"`
-	Email     string `json:"Email"`
-	Password  string `json:"Password"`
+	FirstName string `json:"fname"`
+	LastName  string `json:"lname"`
+	Email     string `json:"email"`
+	Password  string `json:"pass"`
 }
 
 func (app *application) Signup(w http.ResponseWriter, r *http.Request) {
@@ -126,25 +127,45 @@ func (app *application) Signup(w http.ResponseWriter, r *http.Request) {
 
 		defer r.Body.Close()
 
+		// PARSE BODY ITSELF
+		body, err := ioutil.ReadAll(r.Body)
+		sb := string(body)
+		jsonDataMap := make(map[string]interface{})
+		json.Unmarshal([]byte(sb), &jsonDataMap)
+
+		fname, _ := jsonDataMap["fname"].(string)
+		lname, _ := jsonDataMap["lname"].(string)
+		email, _ := jsonDataMap["email"].(string)
+		pass, _ := jsonDataMap["pass"].(string)
+
 		person := &User{
+			/*  THIS WILL NOT WORK
 			FirstName: r.FormValue("FirstName"),
 			LastName:  r.FormValue("LastName"),
 			Email:     r.FormValue("Email"),
 			Password:  r.FormValue("Password"),
+			*/
+
+			FirstName: fname,
+			LastName:  lname,
+			Email:     email,
+			Password:  pass,
 		}
 
-		out := json.NewDecoder(r.Body).Decode(&person)
-		fmt.Println(w, "values are %+v\n", out)
+		//	out := json.NewDecoder(r.Body).Decode(&person)
+		//	fmt.Println(w, "values are %+v\n", out)
 
-		marshalled, err := json.Marshal(out)
+		marshalled, err := json.Marshal(person)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("marshal %s\n", marshalled)
-
-		var user []interface{}
-		unmarshalled := json.Unmarshal(marshalled, &user)
-		fmt.Println(w, unmarshalled)
+		fmt.Printf("marshal part %s\n", marshalled)
+		/*
+		  THIS PART IS NOT REQUIRED
+			var user []interface{}
+			unmarshalled := json.Unmarshal(marshalled, &user)
+			fmt.Println(w,"this is unmarshalled part",unmarshalled)
+		*/
 
 		fmt.Printf("person %s\n", person)
 

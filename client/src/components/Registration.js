@@ -31,27 +31,40 @@ const Registration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const JsonData = ({
+    {
+      /* PROBLEM IN THIS PART
+    const JsonData = ([
       fname,lname,email,pass
-    })
-    console.log(JsonData);
+    ]);*/
 
-    var obj = JSON.stringify(JsonData)
-    console.log(obj);
-    fetch(`http://localhost:8080/signup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body:obj,
-    })
-      .then((response) => response.json())
-      .then((data) => console.log(data))
-      .catch((e) => {
-        console.error(e);
-      });
-    console.log(typeof JsonData);
-    console.log(typeof obj);
+      const demo = {
+        fname: fname.fname,
+        lname: lname.lname,
+        email: email.email,
+        pass: pass.pass,
+      };
+
+      const JsonData = demo;
+
+      console.log(JsonData);
+
+      var obj = JSON.stringify(JsonData);
+      console.log(obj);
+      fetch(`http://localhost:8080/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: obj,
+      })
+        .then((response) => response.json())
+        .then((data) => console.log(data))
+        .catch((e) => {
+          console.error(e);
+        });
+      console.log(typeof JsonData);
+      console.log(typeof obj);
+    }
   };
 
   return (
