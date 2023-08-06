@@ -17,19 +17,37 @@ mongodb Database by default it use port 27017
 ```bash
 mongosh
 ```
-### To Check the connection
-Enter the below command
+### To Check the connection<br>
+First check which **init system** you are using<br>
+Type the following in terminal, for Linux users.
 ```bash
-sudo service mongod start
+ps --no-headers -o comm 1
+```
+If you are using **systemd** (which uses <ins>**systemctl**</ins> command) otherwise **System V Init** (which uses <ins>**service**</ins> command)<br><br>
+In my case I'm using <ins>**systemd**</ins><br>
+<br>
+Enter the below command to start mongoDB
+```bash
+sudo systemctl start mongod
 ```
 The above command tells you that the connection is **Active or not**.<br>
 <br>
-And for connection status type the following in terminal
+And to check the connection status, type the following in terminal
 ```bash
-sudo service mongod status
+sudo systemctl status mongod
 ```
 And for disconnection
 ```bash
-sudo service mongod stop
+sudo systemctl stop mongod
 ```
+<br>
 
+For System V Init 
+<br>
+<br>
+use the following code to start the mongodb
+
+```bash 
+sudo service mongod start
+```
+Replace <ins>**start**</ins> with <ins>**status**</ins> to check the status of the connection and <ins>**stop**</ins> for stop the connection
