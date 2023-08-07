@@ -6,10 +6,11 @@ const Registration = () => {
   const [lname, setLname] = useState("");
   const [pass, setPass] = useState("");
   const [email, setEmail] = useState("");
+  const [rePass, setRepass] = useState("");
 
-  const onChangefName = (e) => {
-    setFname({ fname: e.target.value });
-  };
+//  const onChangefName = (e) => {
+ //   setFname({ fname: e.target.value });
+  //};
 
   const onChangelName = (e) => {
     setLname({ lname: e.target.value });
@@ -31,40 +32,42 @@ const Registration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    {
-      /* PROBLEM IN THIS PART
-    const JsonData = ([
-      fname,lname,email,pass
-    ]);*/
+    /* PROBLEM IN THIS PART
+  const JsonData = ([
+    fname,lname,email,pass
+  ]);*/
 
-      const demo = {
-        "fname": fname.fname,
-        "lname": lname.lname,
-        "email": email.email,
-        "pass": pass.pass,
-      };
+    const demo = {
+      "fname": fname.fname,
+      "lname": lname.lname,
+      "email": email.email,
+      "pass": pass.pass,
+      "rePass": rePass.rePass,
+    };
 
-      const JsonData = demo;
+    const JsonData = demo;
 
-      console.log(JsonData);
+    console.log(JsonData);
 
-      var obj = JSON.stringify(JsonData);
-      console.log(obj);
-      fetch(`http://localhost:8080/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: obj,
-      })
-        .then((response) => response.json())
-        .then((data) => console.log(data))
-        .catch((e) => {
-          console.error(e);
-        });
-      console.log(typeof JsonData);
-      console.log(typeof obj);
-    }
+    var obj = JSON.stringify(JsonData);
+    console.log(obj);
+
+    // connecting to the server
+    fetch(`http://localhost:8080/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: obj,
+    })
+      .then((response) => response.json())
+      .then((data) => console.log(data))
+      .catch((e) => {
+        console.error(e);
+      });
+    console.log(typeof JsonData);
+    console.log(typeof obj);
+
   };
 
   return (
@@ -80,7 +83,7 @@ const Registration = () => {
           placeholder="Enter First Name"
           className="form-control"
           autoComplete="name-new"
-          onChange={onChangefName}
+          onChange={(event) => setFname(event.target.value)}
           required
         />
         <br />
@@ -121,9 +124,11 @@ const Registration = () => {
         <label>Re-Enter Password</label>
         <input
           type="password"
-          name="pass"
+          name="Password"
           minLength={5}
           className="form-control"
+          value={(e) => rePass(e.target.value)}
+          onChange={setRepass(rePass)}
           autoComplete="password-new"
         />
         <br />
