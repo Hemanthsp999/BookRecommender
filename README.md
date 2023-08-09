@@ -9,7 +9,7 @@ npm start
 ### To run the backend
 Enter the following code in terminal from root of the directory
 ```bash
-go run ./cmd/api/
+go run .
 ```
 ### First Connect Database to the Server
 Enter the below command it will open the mongodb shell in termial.<br>
