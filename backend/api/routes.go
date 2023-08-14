@@ -20,9 +20,9 @@ func (App *Application) Routes() http.Handler {
 
 	mux.Get("/books", App.AllBooks)
 
-	mux.Get("/login", App.Login)
-
 	mux.Get("/genres", App.Genre)
+
+	mux.Post("/login", App.Login)
 
 	mux.Post("/signup", App.Signup)
 

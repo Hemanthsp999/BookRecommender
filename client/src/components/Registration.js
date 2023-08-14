@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {  useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Registration = () => {
@@ -8,9 +8,9 @@ const Registration = () => {
   const [email, setEmail] = useState("");
   const [rePass, setRepass] = useState("");
 
-//  const onChangefName = (e) => {
- //   setFname({ fname: e.target.value });
-  //};
+  const onChangefName = (e) => {
+    setFname({ fname: e.target.value });
+  };
 
   const onChangelName = (e) => {
     setLname({ lname: e.target.value });
@@ -25,6 +25,10 @@ const Registration = () => {
 
   const onChangePass = (e) => {
     setPass({ pass: e.target.value });
+  };
+
+  const onChangeRePass = (e) => {
+    setRepass({ rePass: e.target.value });
   };
 
   const navigate = useNavigate();
@@ -68,6 +72,8 @@ const Registration = () => {
     console.log(typeof JsonData);
     console.log(typeof obj);
 
+    navigate("/login")
+
   };
 
   return (
@@ -83,7 +89,7 @@ const Registration = () => {
           placeholder="Enter First Name"
           className="form-control"
           autoComplete="name-new"
-          onChange={(event) => setFname(event.target.value)}
+          onChange={onChangefName}
           required
         />
         <br />
@@ -127,9 +133,9 @@ const Registration = () => {
           name="Password"
           minLength={5}
           className="form-control"
-          value={(e) => rePass(e.target.value)}
-          onChange={setRepass(rePass)}
+          onChange={onChangeRePass}
           autoComplete="password-new"
+          required
         />
         <br />
         <input

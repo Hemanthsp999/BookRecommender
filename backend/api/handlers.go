@@ -1,11 +1,10 @@
 package api
 
 import (
+	database "backend/dataBase"
 	"backend/internal/models"
-	"context"
 	"encoding/json"
 	"fmt"
-	"hash"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -79,35 +78,47 @@ func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Below this is
-// server to handle Login credentials
-
-type Login struct {
-	Email    string    `json:"Email"`
-	Password hash.Hash `json:"Password"`
-}
+//BELOW CODE HANDLES THE LOGIN INFORMATION
 
 func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != "GET" {
-		http.Error(w, "Method Not Found", http.StatusMethodNotAllowed)
+	if r.Method != "POST" {
+		http.Error(w, "method not found", http.StatusMethodNotAllowed)
 		return
 	} else {
 		if err := r.ParseForm(); err != nil {
-			log.Panic(err)
-		}
-
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
 			panic(err)
 		}
 
-		stringByte := string(body)
+		defer r.Body.Close()
 
-		jsonDataMap := make(map[string]interface{})
-		json.Unmarshal([]byte(stringByte), &jsonDataMap)
+		body, err := ioutil.ReadAll(r.Body)
+		sd := string(body)
+		jsonDatamap := make(map[string]interface{})
+		json.Unmarshal([]byte(sd), &jsonDatamap)
+
+		email, _ := jsonDatamap["email"].(string)
+		password, _ := jsonDatamap["password"].(string)
+
+		var user models.LoginCredentials
+
+
+		user = models.LoginCredentials{
+			Email:    email,
+			Password: password,
+		}
+		database.Db.ValidateUser(&user)
+
+		DecodeJson,err := json.Marshal(user)
+		if err != nil{
+			panic(err)
+		}
+		fmt.Printf("Login credentials %s\n", DecodeJson)
+		fmt.Printf("decode json %s\n",DecodeJson)
+
+
+		json.NewEncoder(w).Encode(user)
 	}
-
 }
 
 // server to handle Genres
@@ -126,14 +137,6 @@ func (App *Application) Genre(w http.ResponseWriter, r *http.Request) {
 
 //	BELOW CODE IS FOR SIGNUP PART AND IT'S BUG FREE
 
-type User struct {
-	FirstName  string `json:"fname" bson:"FirstName, omitempty"`
-	LastName   string `json:"lname"`
-	Email      string `json:"email"`
-	Password   string `json:"pass"`
-	RePassword string `json:"repass"`
-}
-
 func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != "POST" {
@@ -145,17 +148,6 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 		}
 
 		defer r.Body.Close()
-
-		clientOptions, err := mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.10.1"))
-
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-		err = clientOptions.Connect(ctx)
-		if err != nil {
-			log.Panic(err)
-		}
-		defer clientOptions.Disconnect(ctx)
-
-		dataBase := clientOptions.Database("BookRecommender").Collection("userData")
 
 		// PARSE BODY ITSELF
 		body, err := ioutil.ReadAll(r.Body)
@@ -169,23 +161,21 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 		pass, _ := jsonDataMap["pass"].(string)
 		repass, _ := jsonDataMap["rePass"].(string)
 
-		person := &User{
-			/*  THIS WILL NOT WORK
-			FirstName: r.FormValue("FirstName"),
-			LastName:  r.FormValue("LastName"),
-			Email:     r.FormValue("Email"),
-			Password:  r.FormValue("Password"),
-			*/
+		var person models.User
+		if pass == repass {
+			person = models.User{
 
-			FirstName:  fname,
-			LastName:   lname,
-			Email:      email,
-			Password:   pass,
-			RePassword: repass,
+				FirstName: fname,
+				LastName:  lname,
+				Email:     email,
+				Password:  pass,
+			}
+			database.Db.AddUser(&person)
+
+		} else {
+			fmt.Println("password is not matching")
+			return
 		}
-
-		//	out := json.NewDecoder(r.Body).Decode(&person)
-		//	fmt.Println(w, "values are %+v\n", out)
 
 		marshalled, err := json.Marshal(person)
 		if err != nil {
@@ -199,16 +189,11 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(w,"this is unmarshalled part",unmarshalled)
 		*/
 
-		insertCollection, err := dataBase.InsertOne(context.Background(), person)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Println(insertCollection.InsertedID)
+		//database.Db.AddUser(person)
 
 		fmt.Printf("person %s\n", person)
 
-		json.NewEncoder(w).Encode(&person)
+		json.NewEncoder(w).Encode(person)
 	}
 
 }
