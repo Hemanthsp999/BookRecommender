@@ -23,7 +23,6 @@ type rmUser struct {
 	Id string
 }
 
-
 var Db DataBase
 
 func (Db *DataBase) Initialization() (*mongo.Client, error) {
@@ -44,20 +43,18 @@ func (Db *DataBase) Initialization() (*mongo.Client, error) {
 		log.Fatal(err)
 	}
 
-
 	// BELOW THIS IS USED FOR DATABASE NAME AND COLLECTION
 
 	// this is to store signup part
 	Db.userCollection = Db.client.Database("signup").Collection("userData")
 
-
-	return &mongo.Client{},nil
+	return &mongo.Client{}, nil
 }
 
 // BELOW CODE IS USED TO ADD NEW USER TO THE DATABASE
 func (Db *DataBase) AddUser(user *models.User) (*mongo.Collection, error) {
 
-	addUser, err := Db.userCollection.InsertOne(context.Background(), user )
+	addUser, err := Db.userCollection.InsertOne(context.Background(), user)
 	if err != nil {
 		fmt.Println("add User not perfect")
 	}
@@ -72,15 +69,13 @@ func (Db *DataBase) RemoveUser(Id *rmUser) {
 	fmt.Println(removeUser.DeletedCount)
 }
 
-
-// THIS HANDLES LOGIN CREDENTIALS 
-func (Db *DataBase) ValidateUser(validUser *models.LoginCredentials) (*mongo.Collection,error) {
-	preUser := validUser
-	valiDate,_ := Db.userCollection.Find(context.TODO(), bson.M{"users":validUser})
-	if valiDate == nil {
-		fmt.Printf("user not exists")
+// THIS HANDLES LOGIN CREDENTIALS
+func (Db *DataBase) ValidateUser(validUser *models.LoginCredentials) (*mongo.Collection, error) {
+	valiDate, _ := Db.userCollection.Find(context.TODO(), bson.M{"objectId_": validUser})
+	if valiDate != nil {
+		fmt.Printf("user exists")
 	} else {
-		fmt.Println("user exists")
+		fmt.Println("user not exists")
 	}
-	return &mongo.Collection{},nil
+	return &mongo.Collection{}, nil
 }

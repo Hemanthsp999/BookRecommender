@@ -1,7 +1,7 @@
 package api
 
 import (
-	database "backend/dataBase"
+	"backend/dataBase"
 	"backend/internal/models"
 	"encoding/json"
 	"fmt"
@@ -12,6 +12,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Application struct {
@@ -78,6 +79,12 @@ func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 
 }
 
+
+func verify(hashed, password string) bool{
+	err := bcrypt.CompareHashAndPassword([]byte(hashed),[]byte(password))
+	return err == nil 
+}
+
 //BELOW CODE HANDLES THE LOGIN INFORMATION
 
 func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
@@ -102,10 +109,11 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 
 		var user models.LoginCredentials
 
+		hashPass,_ := Hash(password)
 
 		user = models.LoginCredentials{
 			Email:    email,
-			Password: password,
+			Password: hashPass,
 		}
 		database.Db.ValidateUser(&user)
 
@@ -135,6 +143,10 @@ func (App *Application) Genre(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func Hash (password string) (string,error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password),14)
+	return string(bytes),err
+}
 //	BELOW CODE IS FOR SIGNUP PART AND IT'S BUG FREE
 
 func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
@@ -163,12 +175,13 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 
 		var person models.User
 		if pass == repass {
+			hashPass,_ := Hash(pass)
 			person = models.User{
 
 				FirstName: fname,
 				LastName:  lname,
 				Email:     email,
-				Password:  pass,
+				Password:  hashPass,
 			}
 			database.Db.AddUser(&person)
 
