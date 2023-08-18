@@ -79,10 +79,9 @@ func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
-func verify(hashed, password string) bool{
-	err := bcrypt.CompareHashAndPassword([]byte(hashed),[]byte(password))
-	return err == nil 
+func verify(hashed, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
+	return err == nil
 }
 
 //BELOW CODE HANDLES THE LOGIN INFORMATION
@@ -109,21 +108,41 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 
 		var user models.LoginCredentials
 
-		hashPass,_ := Hash(password)
+		// hashPass, _ := Hash(password) - don't hash compare raw-string password with hash using bcrypt's CompareHashAndPassword method
 
-		user = models.LoginCredentials{
-			Email:    email,
-			Password: hashPass,
+		// Why you need this extra struct of LoginCredentials....?
+		// user = models.LoginCredentials{
+		// 	Email:    email,
+		// 	Password: hashPass,
+		// }
+
+		db_user, db_err := database.Db.GetUserByEmail(email)
+
+		if db_err != nil {
+			// send message to client - user doesn't exist
+			fmt.Printf("\nError: %s\n", db_err)
+			panic(db_err)
 		}
-		database.Db.ValidateUser(&user)
 
-		DecodeJson,err := json.Marshal(user)
-		if err != nil{
+		fmt.Printf("\n\n DB info: %s\n\n", db_user)
+		password_error := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
+
+
+		fmt.Printf("\n\n Valid password..? : %v \n\n", password_error == nil)
+		// send message to client - Password is invalid
+
+		if err != nil {
+			panic(err)
+		}
+
+		// database.Db.ValidateUser(&user)
+
+		DecodeJson, err := json.Marshal(user)
+		if err != nil {
 			panic(err)
 		}
 		fmt.Printf("Login credentials %s\n", DecodeJson)
-		fmt.Printf("decode json %s\n",DecodeJson)
-
+		fmt.Printf("decode json %s\n", DecodeJson)
 
 		json.NewEncoder(w).Encode(user)
 	}
@@ -143,10 +162,11 @@ func (App *Application) Genre(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func Hash (password string) (string,error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password),14)
-	return string(bytes),err
+func Hash(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
 }
+
 //	BELOW CODE IS FOR SIGNUP PART AND IT'S BUG FREE
 
 func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
@@ -175,7 +195,8 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 
 		var person models.User
 		if pass == repass {
-			hashPass,_ := Hash(pass)
+			hashPass, _ := Hash(pass)
+			fmt.Printf("\n\n\n sent password is %s \n", pass)
 			person = models.User{
 
 				FirstName: fname,
@@ -202,7 +223,7 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(w,"this is unmarshalled part",unmarshalled)
 		*/
 
-		//database.Db.AddUser(person)
+		database.Db.AddUser(&person)
 
 		fmt.Printf("person %s\n", person)
 

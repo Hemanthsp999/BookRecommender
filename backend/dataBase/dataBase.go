@@ -3,6 +3,8 @@ package database
 import (
 	"backend/internal/models"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 
@@ -69,9 +71,31 @@ func (Db *DataBase) RemoveUser(Id *rmUser) {
 	fmt.Println(removeUser.DeletedCount)
 }
 
+func (Db *DataBase) GetUserByEmail(email string) (models.User, error) {
+	// You need user data from collection nothing other than that so find data by email which is and should be unique
+	var user models.User
+	var err error = nil
+
+	validUser := Db.userCollection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
+
+	DecodeJson, err := json.Marshal(user)
+	if err != nil {
+		panic(err)
+	}
+
+	if validUser == nil {
+		fmt.Printf("UserExist: %s\n", DecodeJson)
+	} else {
+		fmt.Printf("User not exist")
+		err = errors.New("User doesn't exist")
+	}
+
+	return user, err
+}
+
 // THIS HANDLES LOGIN CREDENTIALS
 func (Db *DataBase) ValidateUser(validUser *models.LoginCredentials) (*mongo.Collection, error) {
-	valiDate, _ := Db.userCollection.Find(context.TODO(), bson.M{"objectId_": validUser})
+	valiDate, _ := Db.userCollection.Find(context.TODO(), bson.M{"email": validUser.Email})
 	if valiDate != nil {
 		fmt.Printf("user exists")
 	} else {
