@@ -9,7 +9,6 @@ import (
 
 func (App *Application) Routes() http.Handler {
 	//create a mux
-
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.Recoverer)
@@ -22,6 +21,7 @@ func (App *Application) Routes() http.Handler {
 
 	mux.Get("/genres", App.Genre)
 
+	// below is for both signup and signin part
 	mux.Post("/login", App.Login)
 
 	mux.Post("/signup", App.Signup)

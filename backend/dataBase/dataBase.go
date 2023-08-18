@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type DataBase struct {
@@ -70,12 +71,19 @@ func (Db *DataBase) RemoveUser(Id *rmUser) {
 }
 
 // THIS HANDLES LOGIN CREDENTIALS
-func (Db *DataBase) ValidateUser(validUser *models.LoginCredentials) (*mongo.Collection, error) {
-	valiDate, _ := Db.userCollection.Find(context.TODO(), bson.M{"objectId_": validUser})
-	if valiDate != nil {
-		fmt.Printf("user exists")
-	} else {
-		fmt.Println("user not exists")
+func (Db *DataBase) ValidateUser(validUser *models.User) (*mongo.Collection, error) {
+	var user models.User
+	var dbUser models.User
+	err := Db.userCollection.FindOne(context.TODO(), bson.M{"email":validUser.Email}).Decode(&dbUser)
+	if err != nil {
+		log.Panic(err)
+	}
+	userPass := []byte(user.Password)
+	dbPass := []byte(dbUser.Password)
+
+	passErr := bcrypt.CompareHashAndPassword(dbPass, userPass)
+	if passErr != nil {
+		panic(passErr)
 	}
 	return &mongo.Collection{}, nil
 }

@@ -21,11 +21,14 @@ func main() {
 
 	var App api.Application
 
-	// Establish a connection to mongodb
 
-	// connect to the database
 	App.Domain = "Books.com"
-	database.Db.Initialization()
+
+	// Establishing connection to database
+	DataBase,err := database.Db.Initialization()
+	if err != nil{
+		fmt.Println("Error in connecting to DataBase",DataBase)
+	}
 	log.Println("starting server at port", port)
 	http.HandleFunc("/", App.Home)
 	http.HandleFunc("/books/id", App.AllBooks)
@@ -33,11 +36,11 @@ func main() {
 	http.HandleFunc("/genres", App.Genre)
 	http.HandleFunc("/signup", App.Signup)
 
-	// start a web server
-	ds := http.ListenAndServe(fmt.Sprintf(":%d", port), App.Routes())
+	// Starting web server on port 8080
+	myServer := http.ListenAndServe(fmt.Sprintf(":%d", port), App.Routes())
 
-	if ds != nil {
-		log.Fatal(ds)
+	if myServer != nil {
+		log.Fatal(myServer)
 	}
 
 }
