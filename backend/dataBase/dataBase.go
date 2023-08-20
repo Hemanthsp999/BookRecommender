@@ -3,6 +3,8 @@ package database
 import (
 	"backend/internal/models"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 
@@ -12,7 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type DataBase struct {
@@ -70,20 +71,25 @@ func (Db *DataBase) RemoveUser(Id *rmUser) {
 	fmt.Println(removeUser.DeletedCount)
 }
 
-// THIS HANDLES LOGIN CREDENTIALS
-func (Db *DataBase) ValidateUser(validUser *models.User) (*mongo.Collection, error) {
-	var user models.User
-	var dbUser models.User
-	err := Db.userCollection.FindOne(context.TODO(), bson.M{"email":validUser.Email}).Decode(&dbUser)
-	if err != nil {
-		log.Panic(err)
-	}
-	userPass := []byte(user.Password)
-	dbPass := []byte(dbUser.Password)
 
-	passErr := bcrypt.CompareHashAndPassword(dbPass, userPass)
-	if passErr != nil {
-		panic(passErr)
+
+func (Db *DataBase) GetUserByEmail(email string) (models.User, error) {
+	
+	var user models.User
+
+	validUser := Db.userCollection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
+
+	DecodeJson, err := json.Marshal(user)
+	if err != nil {
+		panic(err)
 	}
-	return &mongo.Collection{}, nil
+
+	if validUser == nil {
+		fmt.Printf("User Exists: %s\n", DecodeJson)
+	} else {
+		fmt.Printf("User not exists")
+		err = errors.New("User doesn't exists")
+
+	}
+	return user, err
 }
