@@ -6,14 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var SECRET_KEY = []byte("THIS IS NOT JUST A KEY BUT ITS ACTUALLY JUST A KEY")
 
 type Application struct {
 	Domain string
@@ -79,13 +79,120 @@ func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func verify(hashed, password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
-	return err == nil
+func Hash(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
 }
 
-//BELOW CODE HANDLES THE LOGIN INFORMATION
+// server to handle Genres
 
+func (App *Application) Genre(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "still in progress %v", r)
+
+}
+
+// implemented JWT Token authentication for userLogin
+func generateJWT(email string) (string, error) {
+	expirationTime := time.Now().Add(5 * time.Minute)
+	claims := models.User{
+		Email: email,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(SECRET_KEY)
+	if err == nil {
+		return tokenString, nil
+	}
+	return "", nil
+}
+
+// verifyToken
+func VerifyToken(tokenString string) (email string, err error) {
+	claims := &models.User{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
+		return SECRET_KEY, nil
+	})
+	if token != nil {
+		return claims.Email, nil
+	}
+	return "", err
+}
+
+// BELOW CODE IS FOR SIGNUP PART
+func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != "POST" {
+		http.Error(w, "method not allowed", http.StatusNotFound)
+		return
+	} else {
+		if err := r.ParseForm(); err != nil {
+			panic(err)
+		}
+
+		defer r.Body.Close()
+
+		// PARSE BODY ITSELF
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			panic(err)
+		}
+		sb := string(body)
+		jsonDataMap := make(map[string]interface{})
+		json.Unmarshal([]byte(sb), &jsonDataMap)
+
+		fname, _ := jsonDataMap["fname"].(string)
+		lname, _ := jsonDataMap["lname"].(string)
+		email, _ := jsonDataMap["email"].(string)
+		pass, _ := jsonDataMap["pass"].(string)
+		repass, _ := jsonDataMap["rePass"].(string)
+
+		var person models.User
+		if pass == repass {
+			hashPass, _ := Hash(pass)
+			fmt.Printf("\n\n\n sent password is %s \n", pass)
+			person = models.User{
+				FirstName: fname,
+				LastName:  lname,
+				Email:     email,
+				Password:  hashPass,
+			}
+
+			checkEmail, _ := database.Db.GetUserByEmail(person.Email)
+			if checkEmail.Email == person.Email {
+				json.Marshal(checkEmail.Email)
+				fmt.Printf("user already exists %s\n", checkEmail.Email)
+				return
+			} else {
+				fmt.Println(w, "you can now register here ", http.StatusOK)
+				_, err := database.Db.AddUser(&person)
+				if err != nil {
+					panic(err)
+				}
+				DecodeData, _ := json.Marshal(person)
+				fmt.Printf("\n\nRegistered Data is : %s\n\n", DecodeData)
+
+			}
+
+		} else {
+			fmt.Println("password is not matching")
+			return
+		}
+		/* THIS BLOCK IS USED FOR STORING GO STRUCT EMAIL INTO A STRING TO SEND RESPONSE TO CLIENT BUT IT'S NOT REQUIRED CAUSE PROBLEM IS SOLVED
+		var datas string
+		datas = person.Email
+		json.Marshal(datas)
+		fmt.Printf("\ndatas is %s\n\n",datas)
+		*/
+
+		json.NewEncoder(w).Encode(&person)
+	}
+}
+
+// BELOW CODE HANDLES THE LOGIN DETAILS
 func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != "POST" {
@@ -106,128 +213,30 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 		email, _ := jsonDatamap["email"].(string)
 		password, _ := jsonDatamap["password"].(string)
 
-		var user models.LoginCredentials
-
-		// hashPass, _ := Hash(password) - don't hash compare raw-string password with hash using bcrypt's CompareHashAndPassword method
-
-		// Why you need this extra struct of LoginCredentials....?
-		// user = models.LoginCredentials{
-		// 	Email:    email,
-		// 	Password: hashPass,
-		// }
+		// login credentials
 
 		db_user, db_err := database.Db.GetUserByEmail(email)
-
 		if db_err != nil {
 			// send message to client - user doesn't exist
-			fmt.Printf("\nError: %s\n", db_err)
+			fmt.Printf("\nError: %s\n", &db_err)
 			panic(db_err)
 		}
+		fmt.Printf("\n\n DB info: %s\n\n", &db_user)
+		password_err := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
 
-		fmt.Printf("\n\n DB info: %s\n\n", db_user)
-		password_error := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
-
-
-		fmt.Printf("\n\n Valid password..? : %v \n\n", password_error == nil)
-		// send message to client - Password is invalid
+		fmt.Printf("\n\n valid password...? : %v \n\n", password_err == nil)
+		// send msg to client - password is invalid
 
 		if err != nil {
 			panic(err)
 		}
 
-		// database.Db.ValidateUser(&user)
+		json.Marshal(db_user.Email)
+		fmt.Printf("marshalled user %s\n", db_user.Email)
+		fmt.Printf("marshalled password: %s\n", db_user.Password)
 
-		DecodeJson, err := json.Marshal(user)
-		if err != nil {
+		if err := json.NewEncoder(w).Encode(db_user.Email); err != nil {
 			panic(err)
 		}
-		fmt.Printf("Login credentials %s\n", DecodeJson)
-		fmt.Printf("decode json %s\n", DecodeJson)
-
-		json.NewEncoder(w).Encode(user)
 	}
-}
-
-// server to handle Genres
-
-func (App *Application) Genre(w http.ResponseWriter, r *http.Request) {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017/"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	collection := client.Database("public").Collection("genres")
-
-	fmt.Println(collection)
-
-}
-
-func Hash(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(bytes), err
-}
-
-//	BELOW CODE IS FOR SIGNUP PART AND IT'S BUG FREE
-
-func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != "POST" {
-		http.Error(w, "method not allowed", http.StatusNotFound)
-		return
-	} else {
-		if err := r.ParseForm(); err != nil {
-			panic(err)
-		}
-
-		defer r.Body.Close()
-
-		// PARSE BODY ITSELF
-		body, err := ioutil.ReadAll(r.Body)
-		sb := string(body)
-		jsonDataMap := make(map[string]interface{})
-		json.Unmarshal([]byte(sb), &jsonDataMap)
-
-		fname, _ := jsonDataMap["fname"].(string)
-		lname, _ := jsonDataMap["lname"].(string)
-		email, _ := jsonDataMap["email"].(string)
-		pass, _ := jsonDataMap["pass"].(string)
-		repass, _ := jsonDataMap["rePass"].(string)
-
-		var person models.User
-		if pass == repass {
-			hashPass, _ := Hash(pass)
-			fmt.Printf("\n\n\n sent password is %s \n", pass)
-			person = models.User{
-
-				FirstName: fname,
-				LastName:  lname,
-				Email:     email,
-				Password:  hashPass,
-			}
-			database.Db.AddUser(&person)
-
-		} else {
-			fmt.Println("password is not matching")
-			return
-		}
-
-		marshalled, err := json.Marshal(person)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("marshal part %s\n", marshalled)
-		/*
-			  THIS PART IS NOT REQUIRED
-				var user []interface{}
-				unmarshalled := json.Unmarshal(marshalled, &user)
-				fmt.Println(w,"this is unmarshalled part",unmarshalled)
-		*/
-
-		database.Db.AddUser(&person)
-
-		fmt.Printf("person %s\n", person)
-
-		json.NewEncoder(w).Encode(person)
-	}
-
 }

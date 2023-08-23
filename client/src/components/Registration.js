@@ -1,4 +1,4 @@
-import {  useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Registration = () => {
@@ -8,6 +8,7 @@ const Registration = () => {
   const [email, setEmail] = useState("");
   const [rePass, setRepass] = useState("");
 
+  /*  THIS PART IS NOT USING CAUSE NOW USING VALUE ELEMENT INSTEAD OF USING ONCHANGE FUNCTION AS IT MAKES COMPLEX
   const onChangefName = (e) => {
     setFname({ fname: e.target.value });
   };
@@ -30,23 +31,20 @@ const Registration = () => {
   const onChangeRePass = (e) => {
     setRepass({ rePass: e.target.value });
   };
+  */
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    /* PROBLEM IN THIS PART
-  const JsonData = ([
-    fname,lname,email,pass
-  ]);*/
 
     const demo = {
-      "fname": fname.fname,
-      "lname": lname.lname,
-      "email": email.email,
-      "pass": pass.pass,
-      "rePass": rePass.rePass,
+      fname: fname,
+      lname: lname,
+      email: email,
+      pass: pass,
+      rePass: rePass,
     };
 
     const JsonData = demo;
@@ -71,9 +69,6 @@ const Registration = () => {
       });
     console.log(typeof JsonData);
     console.log(typeof obj);
-
-    navigate("/login")
-
   };
 
   return (
@@ -89,7 +84,8 @@ const Registration = () => {
           placeholder="Enter First Name"
           className="form-control"
           autoComplete="name-new"
-          onChange={onChangefName}
+          value={fname}
+          onChange={(e) => setFname(e.target.value)}
           required
         />
         <br />
@@ -100,7 +96,8 @@ const Registration = () => {
           placeholder="Enter Last Name"
           className="form-control"
           autoComplete="name-new"
-          onChange={onChangelName}
+          value={lname}
+          onChange={(e) => setLname(e.target.value)}
           required
         />
         <br />
@@ -111,7 +108,8 @@ const Registration = () => {
           placeholder="Enter Email Address"
           className="form-control"
           autoComplete="email-new"
-          onChange={onChangeEmail}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
         <br />
@@ -123,7 +121,8 @@ const Registration = () => {
           minLength={5}
           className="form-control"
           autoComplete="password-new"
-          onChange={onChangePass}
+          value={pass}
+          onChange={(e) => setPass(e.target.value)}
           required
         />
         <br />
@@ -133,7 +132,8 @@ const Registration = () => {
           name="Password"
           minLength={5}
           className="form-control"
-          onChange={onChangeRePass}
+          value={rePass}
+          onChange={(e) => setRepass(e.target.value)}
           autoComplete="password-new"
           required
         />

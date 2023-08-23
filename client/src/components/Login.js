@@ -6,14 +6,14 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const onChangeEmail = (e) => {
-    setEmail({ email: e.target.value });
-  };
+  /*  const onChangeEmail = (e) => {
+      setEmail({ email: e.target.value });
+    };
+  
 
   const onChangePassword = (e) => {
     setPassword({ password: e.target.value });
   };
-  /*
     const { setJwtToken } = useOutletContext();
     const { setAlertClassName } = useOutletContext();
     const { setAlertMessage } = useOutletContext();
@@ -22,35 +22,35 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const jsonObj = {
-      "email":email.email,
-      "password":password.password,
+      email: email,
+      password: password,
     };
-    
+
     const jsonContainer = jsonObj;
     console.log(jsonContainer);
 
     var obj = JSON.stringify(jsonContainer);
     console.log(obj);
 
-    fetch(`http://localhost:8080/login`,{
+    fetch(`http://localhost:8080/login`, {
       method: "POST",
-      headers:{
-        "Content-Type":"application/json",
+      headers: {
+        "Content-Type": "application/json",
       },
       body: obj,
     })
-    .then((response) => response.json())
-    .then((data) => console.log(data))
-    .catch((e) => {
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(typeof data);
+      })
+      .catch((e) => {
         console.error(e);
       });
-
-  
-  }
+  };
 
   return (
     <div className="col-md-6 offset-md-3">
@@ -64,9 +64,9 @@ const Login = () => {
           className="form-control"
           name="email"
           autoComplete="email-new"
-          onChange={onChangeEmail}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
-          //onChange={(event) => setEmail(event.target.value)}
         />
         <Input
           title="Password"
@@ -74,9 +74,9 @@ const Login = () => {
           className="form-control"
           name="password"
           autoComplete="password-new"
-          onChange={onChangePassword}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
-          //  onChange={(event) => setPassword(event.target.value)}
         />
         <hr />
 

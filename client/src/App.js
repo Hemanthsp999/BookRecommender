@@ -25,7 +25,7 @@ function App() {
             {" "}
             <span className="badge bg-success">Sign Up</span>
           </Link>
-          {jwtToken === "" ? (
+          {jwtToken === (Response.email&&Response.password) ? (
             <Link to="/login">
               <span className="badge bg-success">Login</span>
             </Link>
