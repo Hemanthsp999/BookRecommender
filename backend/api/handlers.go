@@ -165,6 +165,7 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 			if checkEmail.Email == person.Email {
 				json.Marshal(checkEmail.Email)
 				fmt.Printf("user already exists %s\n", checkEmail.Email)
+				json.NewEncoder(w).Encode(http.StatusNotFound)
 				return
 			} else {
 				fmt.Println(w, "you can now register here ", http.StatusOK)
@@ -174,6 +175,7 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 				}
 				DecodeData, _ := json.Marshal(person)
 				fmt.Printf("\n\nRegistered Data is : %s\n\n", DecodeData)
+				json.NewEncoder(w).Encode(http.StatusAccepted)
 
 			}
 
@@ -188,7 +190,6 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("\ndatas is %s\n\n",datas)
 		*/
 
-		json.NewEncoder(w).Encode(&person)
 	}
 }
 
@@ -218,10 +219,11 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 		db_user, db_err := database.Db.GetUserByEmail(email)
 		if db_err != nil {
 			// send message to client - user doesn't exist
-			fmt.Printf("\nError: %s\n", &db_err)
-			panic(db_err)
+			json.NewEncoder(w).Encode(http.StatusNotFound)
+			fmt.Printf("\nError: %v\n", &db_err)
+			fmt.Println(db_err)
 		}
-		fmt.Printf("\n\n DB info: %s\n\n", &db_user)
+		fmt.Printf("\n\n DB info: %v\n\n", &db_user)
 		password_err := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
 
 		fmt.Printf("\n\n valid password...? : %v \n\n", password_err == nil)
@@ -235,7 +237,7 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("marshalled user %s\n", db_user.Email)
 		fmt.Printf("marshalled password: %s\n", db_user.Password)
 
-		if err := json.NewEncoder(w).Encode(db_user.Email); err != nil {
+		if err := json.NewEncoder(w).Encode(http.StatusNotFound); err != nil {
 			panic(err)
 		}
 	}

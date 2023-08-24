@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 const Registration = () => {
   const [fname, setFname] = useState("");
@@ -8,38 +8,15 @@ const Registration = () => {
   const [email, setEmail] = useState("");
   const [rePass, setRepass] = useState("");
 
-  /*  THIS PART IS NOT USING CAUSE NOW USING VALUE ELEMENT INSTEAD OF USING ONCHANGE FUNCTION AS IT MAKES COMPLEX
-  const onChangefName = (e) => {
-    setFname({ fname: e.target.value });
-  };
-
-  const onChangelName = (e) => {
-    setLname({ lname: e.target.value });
-  };
-
-  // getting email from user
-  const onChangeEmail = (e) => {
-    setEmail({ email: e.target.value });
-  };
-
-  // getting password from user
-
-  const onChangePass = (e) => {
-    setPass({ pass: e.target.value });
-  };
-
-  const onChangeRePass = (e) => {
-    setRepass({ rePass: e.target.value });
-  };
-  */
+  const { setAlertMessage } = useOutletContext();
+  const { setAlertClassName } = useOutletContext();
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-
-    const demo = {
+    const jsonObj = {
       fname: fname,
       lname: lname,
       email: email,
@@ -47,7 +24,7 @@ const Registration = () => {
       rePass: rePass,
     };
 
-    const JsonData = demo;
+    const JsonData = jsonObj;
 
     console.log(JsonData);
 
@@ -55,18 +32,37 @@ const Registration = () => {
     console.log(obj);
 
     // connecting to the server
-    fetch(`http://localhost:8080/signup`, {
+    fetch("http://localhost:8080/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: obj,
     })
-      .then((response) => response.json())
-      .then((data) => console.log(data))
+      .then(function (response) {
+        // THIS BLOCK ONLY RECIEVS RESPONSE FROM SERVER
+        return response.json();
+      })
+      .then(function (data) {
+        // THIS BLOCK PRINTS THE DATA RECIVED FROM SERVER
+        console.log("GETTING RESPONSE FROM SERVER SIDE", data);
+        try {
+          if (data === 404) {
+            setAlertClassName("alert-warning");
+            setAlertMessage("email already existed");
+            navigate("/login");
+          } else {
+            setAlertMessage("You can Register now !");
+            setAlertClassName("d-none");
+          }
+        } catch {
+          console.error(Error);
+        }
+      })
       .catch((e) => {
         console.error(e);
       });
+
     console.log(typeof JsonData);
     console.log(typeof obj);
   };

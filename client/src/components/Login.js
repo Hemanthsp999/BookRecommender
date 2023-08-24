@@ -1,24 +1,14 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import Input from "./form/Input";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  /*  const onChangeEmail = (e) => {
-      setEmail({ email: e.target.value });
-    };
-  
-
-  const onChangePassword = (e) => {
-    setPassword({ password: e.target.value });
-  };
-    const { setJwtToken } = useOutletContext();
-    const { setAlertClassName } = useOutletContext();
-    const { setAlertMessage } = useOutletContext();
-  
-  */
+  //    const { setJwtToken } = useOutletContext();
+  const { setAlertClassName } = useOutletContext();
+  const { setAlertMessage } = useOutletContext();
 
   const navigate = useNavigate();
 
@@ -36,16 +26,30 @@ const Login = () => {
     var obj = JSON.stringify(jsonContainer);
     console.log(obj);
 
-    fetch(`http://localhost:8080/login`, {
+    fetch("http://localhost:8080/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: obj,
     })
-      .then((response) => response.json())
-      .then((data) => {
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
+        console.log("dlsl", data);
         console.log(typeof data);
+        try {
+          if (data === 404) {
+            setAlertClassName("alert-warning");
+            setAlertMessage("Email not found");
+          } else {
+            setAlertMessage("Everything is Ok");
+            setAlertClassName("d-none");
+          }
+        } catch {
+          console.error(e);
+        }
       })
       .catch((e) => {
         console.error(e);
