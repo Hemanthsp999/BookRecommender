@@ -87,7 +87,14 @@ func Hash(password string) (string, error) {
 // server to handle Genres
 
 func (App *Application) Genre(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "still in progress %v", r)
+	var genre = [10]string{"Action","Comedy","Adventure","Novel","Romantic","Love","Detective","Thriller","Shooting","Calm"}	
+	out, err := json.Marshal(genre)
+	if err != nil {
+		fmt.Println(err)
+	}
+	w.Header().Set("Content-Type","application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(out)
 
 }
 
@@ -183,12 +190,6 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("password is not matching")
 			return
 		}
-		/* THIS BLOCK IS USED FOR STORING GO STRUCT EMAIL INTO A STRING TO SEND RESPONSE TO CLIENT BUT IT'S NOT REQUIRED CAUSE PROBLEM IS SOLVED
-		var datas string
-		datas = person.Email
-		json.Marshal(datas)
-		fmt.Printf("\ndatas is %s\n\n",datas)
-		*/
 
 	}
 }
@@ -219,9 +220,12 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 		db_user, db_err := database.Db.GetUserByEmail(email)
 		if db_err != nil {
 			// send message to client - user doesn't exist
-			json.NewEncoder(w).Encode(http.StatusNotFound)
 			fmt.Printf("\nError: %v\n", &db_err)
 			fmt.Println(db_err)
+			json.NewEncoder(w).Encode(http.StatusNotFound)
+		} else {
+			json.NewEncoder(w).Encode(http.StatusFound)
+			return
 		}
 		fmt.Printf("\n\n DB info: %v\n\n", &db_user)
 		password_err := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
@@ -236,9 +240,10 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 		json.Marshal(db_user.Email)
 		fmt.Printf("marshalled user %s\n", db_user.Email)
 		fmt.Printf("marshalled password: %s\n", db_user.Password)
-
-		if err := json.NewEncoder(w).Encode(http.StatusNotFound); err != nil {
-			panic(err)
-		}
+		/*
+			if err := json.NewEncoder(w).Encode(http.StatusFound); err != nil {
+				panic(err)
+			}
+		*/
 	}
 }

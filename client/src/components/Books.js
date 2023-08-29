@@ -11,14 +11,14 @@ const Books = () => {
     const requestOption = {
       method: "GET",
       headers: headers,
-    }
+    };
 
     fetch(`http://localhost:8080/books`, requestOption)
       .then((response) => response.json())
       .then((data) => {
         setBooks(data);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   }, []);

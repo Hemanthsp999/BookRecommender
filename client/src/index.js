@@ -8,8 +8,15 @@ import Genre from "./components/Genre";
 import ErrorPage from "./components/ErrorPage";
 import Books from "./components/Books";
 import Book from "./components/Book";
-import Fav from './components/Fav';
-import Registration from './components/Registration';
+import Fav from "./components/Fav";
+import Registration from "./components/Registration";
+import Action from "./components/Genres/Action";
+import Comedy from "./components/Genres/Comedy";
+import Thriller from "./components/Genres/Thriller";
+import FairyTale from "./components/Genres/FairyTale";
+import Novel from "./components/Genres/Novel";
+import Suspense from "./components/Genres/Suspense";
+import AutoBiography from "./components/Genres/AutoBiography";
 
 const router = createBrowserRouter([
   {
@@ -40,9 +47,37 @@ const router = createBrowserRouter([
       },
       {
         path: "/signup",
-        element: <Registration />
-      }
-    ]
+        element: <Registration />,
+      },
+      {
+        path: "/action",
+        element: <Action />,
+      },
+      {
+        path: "/comedy",
+        element: <Comedy />,
+      },
+      {
+        path: "/thriller",
+        element: <Thriller />,
+      },
+      {
+        path: "/fairyTale",
+        element: <FairyTale />,
+      },
+      {
+        path: "/novel",
+        element: <Novel />,
+      },
+      {
+        path: "/suspense",
+        element: <Suspense />,
+      },
+      {
+        path: "/autoBiography",
+        element: <AutoBiography />,
+      },
+    ],
   },
 ]);
 
@@ -50,5 +85,5 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <RouterProvider router={router} />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

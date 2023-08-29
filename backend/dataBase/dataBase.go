@@ -8,11 +8,9 @@ import (
 	"fmt"
 	"log"
 
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
@@ -30,12 +28,13 @@ var Db DataBase
 func (Db *DataBase) Initialization() (*mongo.Client, error) {
 
 	var err error
-	Db.client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&AppName=mongosh+1.8.2"))
+	Db.client, err = mongo.Connect(context.Background())
+//	Db.client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&AppName=mongosh+1.8.2")) 
 	if err != nil {
 		log.Fatal(err)
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	Db.client.Connect(ctx)
+//	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+//	Db.client.Connect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,10 +70,8 @@ func (Db *DataBase) RemoveUser(Id *rmUser) {
 	fmt.Println(removeUser.DeletedCount)
 }
 
-
-
 func (Db *DataBase) GetUserByEmail(email string) (models.User, error) {
-	
+
 	var user models.User
 
 	validUser := Db.userCollection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)

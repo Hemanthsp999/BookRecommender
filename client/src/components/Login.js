@@ -6,7 +6,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  //    const { setJwtToken } = useOutletContext();
+  const { setJwtToken } = useOutletContext();
   const { setAlertClassName } = useOutletContext();
   const { setAlertMessage } = useOutletContext();
 
@@ -33,17 +33,19 @@ const Login = () => {
       },
       body: obj,
     })
-      .then(function(response) {
+      .then(function (response) {
         return response.json();
       })
-      .then(function(data) {
+      .then(function (data) {
         console.log("dlsl", data);
         console.log(typeof data);
         try {
           if (data === 404) {
-            setAlertClassName("alert-warning");
+            setAlertClassName("alert-danger");
             setAlertMessage("Email not found");
           } else {
+            navigate("/");
+            setJwtToken("login");
             setAlertMessage("Everything is Ok");
             setAlertClassName("d-none");
           }

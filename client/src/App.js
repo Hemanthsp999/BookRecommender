@@ -18,22 +18,24 @@ function App() {
     <div className="container">
       <div className="row">
         <div className="col">
-          <h1 className="mt-3">Read some books</h1>
+          <h1 className="mt-3">Read some books!</h1>
         </div>
         <div className="col text-end">
           <Link to="/signup">
             {" "}
             <span className="badge bg-success">Sign Up</span>
           </Link>
-          {jwtToken === (Response.email&&Response.password) ? (
-            <Link to="/login">
-              <span className="badge bg-success">Login</span>
-            </Link>
-          ) : (
+          {jwtToken === "login" ? (
             <a href="#!" onClick={logOut}>
               <span className="badge bg-danger">Logout</span>
             </a>
-          )}
+          ) : (
+
+            <Link to="/login">
+              <span className="badge bg-success">Login</span>
+            </Link>
+          )
+          }
         </div>
         <hr className="mb-3"></hr>
         <div className="row">
@@ -49,7 +51,7 @@ function App() {
                 >
                   Books
                 </Link>
-                {jwtToken !== "" && (
+                {jwtToken === "login"  && (
                   <>
                     <Link
                       to="/genre"

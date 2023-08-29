@@ -10,6 +10,7 @@ const Registration = () => {
 
   const { setAlertMessage } = useOutletContext();
   const { setAlertClassName } = useOutletContext();
+  const { setJwtToken } = useOutletContext();
 
   const navigate = useNavigate();
 
@@ -48,12 +49,14 @@ const Registration = () => {
         console.log("GETTING RESPONSE FROM SERVER SIDE", data);
         try {
           if (data === 404) {
-            setAlertClassName("alert-warning");
+            setAlertClassName("alert-danger");
             setAlertMessage("email already existed");
+            setJwtToken(null);
             navigate("/login");
           } else {
             setAlertMessage("You can Register now !");
             setAlertClassName("d-none");
+            setJwtToken("signup");
           }
         } catch {
           console.error(Error);
