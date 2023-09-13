@@ -33,20 +33,19 @@ const Login = () => {
       },
       body: obj,
     })
-      .then(function (response) {
+      .then(function(response) {
         return response.json();
       })
-      .then(function (data) {
-        console.log("dlsl", data);
-        console.log(typeof data);
+      .then(function(data) {
+        console.log("server response", data);
         try {
           if (data === 404) {
             setAlertClassName("alert-danger");
             setAlertMessage("Email not found");
           } else {
             navigate("/");
-            setJwtToken("login");
-            setAlertMessage("Everything is Ok");
+            setJwtToken(true);
+            setAlertMessage("User is checked");
             setAlertClassName("d-none");
           }
         } catch {
@@ -56,6 +55,9 @@ const Login = () => {
       .catch((e) => {
         console.error(e);
       });
+    // SET STATE TO NULL AFTER SUBMITTING THE FORM
+    setEmail("");
+    setPassword("");
   };
 
   return (

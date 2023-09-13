@@ -87,12 +87,12 @@ func Hash(password string) (string, error) {
 // server to handle Genres
 
 func (App *Application) Genre(w http.ResponseWriter, r *http.Request) {
-	var genre = [10]string{"Action","Comedy","Adventure","Novel","Romantic","Love","Detective","Thriller","Shooting","Calm"}	
+	var genre = [10]string{"Action", "Comedy", "Adventure", "Novel", "Romantic", "Love", "Detective", "Thriller", "Shooting", "Calm"}
 	out, err := json.Marshal(genre)
 	if err != nil {
 		fmt.Println(err)
 	}
-	w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(out)
 
@@ -224,13 +224,17 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(db_err)
 			json.NewEncoder(w).Encode(http.StatusNotFound)
 		} else {
-			json.NewEncoder(w).Encode(http.StatusFound)
-			return
+			fmt.Printf("\n\n DB info: %v\n\n", &db_user)
+			password_err := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
+			if password_err != nil {
+				json.NewEncoder(w).Encode(http.StatusNotFound)
+			} else {
+				fmt.Printf("\n\n valid password...? : %v \n\n", password_err == nil)
+				json.NewEncoder(w).Encode(http.StatusFound)
+				return
+			}
 		}
-		fmt.Printf("\n\n DB info: %v\n\n", &db_user)
-		password_err := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
 
-		fmt.Printf("\n\n valid password...? : %v \n\n", password_err == nil)
 		// send msg to client - password is invalid
 
 		if err != nil {
@@ -240,10 +244,5 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 		json.Marshal(db_user.Email)
 		fmt.Printf("marshalled user %s\n", db_user.Email)
 		fmt.Printf("marshalled password: %s\n", db_user.Password)
-		/*
-			if err := json.NewEncoder(w).Encode(http.StatusFound); err != nil {
-				panic(err)
-			}
-		*/
 	}
 }

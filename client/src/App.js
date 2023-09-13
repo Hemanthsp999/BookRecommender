@@ -3,15 +3,15 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import Alert from "./components/Alert";
 
 function App() {
-  const [jwtToken, setJwtToken] = useState("");
+  const [jwtToken, setJwtToken] = useState(false);
   const [alertClassName, setAlertClassName] = useState("d-none");
   const [alertMessage, setAlertMessage] = useState("");
 
   const navigate = useNavigate();
 
   const logOut = () => {
-    setJwtToken("");
-    navigate("/login");
+    setJwtToken(false);
+    console.log("loged out");
   };
 
   return (
@@ -25,17 +25,15 @@ function App() {
             {" "}
             <span className="badge bg-success">Sign Up</span>
           </Link>
-          {jwtToken === "login" ? (
-            <a href="#!" onClick={logOut}>
+          {jwtToken === true ? (
+            <Link onClick={logOut}>
               <span className="badge bg-danger">Logout</span>
-            </a>
+            </Link>
           ) : (
-
             <Link to="/login">
               <span className="badge bg-success">Login</span>
             </Link>
-          )
-          }
+          )}
         </div>
         <hr className="mb-3"></hr>
         <div className="row">
@@ -51,7 +49,7 @@ function App() {
                 >
                   Books
                 </Link>
-                {jwtToken === "login"  && (
+                {jwtToken === true && (
                   <>
                     <Link
                       to="/genre"
