@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
@@ -44,39 +45,56 @@ func (App *Application) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
-	var books []models.Book
 
-	rd, _ := time.Parse("2022-02-09", "2018-10-16")
-	atomicHab := models.Book{
-		ID:          1,
-		Title:       "Atomic Habbits",
-		Author:      "James Clear",
-		ReleaseDate: rd,
-		Rating:      4,
+	if r.Method == "GET" {
+
+		var books models.Book
+		defer r.Body.Close()
+
+		json.NewDecoder(r.Body).Decode(&books)
+
+		DataBook, err := database.Db.GetAllBooks()
+		if err != nil {
+			log.Panic(err)
+		}
+		fmt.Print("\nThis is from Handler.go\t", DataBook)
+		json.NewEncoder(w).Encode(http.StatusFound)
+
+	} else {
+		fmt.Println(http.StatusMethodNotAllowed)
 	}
+}
 
-	books = append(books, atomicHab)
+func (App *Application) GetByGenre(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		if err := r.ParseForm(); err != nil {
+			log.Panic(err)
+			return
+		}
 
-	rd, _ = time.Parse("2006-02-09", "1942-05-19")
-	theStang := models.Book{
-		ID:          2,
-		Title:       "The Stanger",
-		Author:      "Alber Camus",
-		ReleaseDate: rd,
-		Rating:      5,
-	}
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Panic(err)
+		}
+		sBody := string(body)
+		genreType := make(map[string]interface{})
+		json.Unmarshal([]byte(sBody), &genreType)
 
-	books = append(books, theStang)
+		bookGenre := genreType["Type"].(string)
+		DataBaseAction, err := database.Db.GenreBooks(bookGenre)
+		if err != nil {
+			log.Panic(err)
+			return
+		} else {
+			fmt.Println(DataBaseAction)
+			json.NewEncoder(w).Encode(http.StatusAccepted)
+		}
 
-	out, err := json.Marshal(books)
-	if err != nil {
-		fmt.Println(err)
+	} else {
+		fmt.Println(http.StatusMethodNotAllowed)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(out)
-
 }
 
 func Hash(password string) (string, error) {
@@ -84,23 +102,9 @@ func Hash(password string) (string, error) {
 	return string(bytes), err
 }
 
-// server to handle Genres
-
-func (App *Application) Genre(w http.ResponseWriter, r *http.Request) {
-	var genre = [10]string{"Action", "Comedy", "Adventure", "Novel", "Romantic", "Love", "Detective", "Thriller", "Shooting", "Calm"}
-	out, err := json.Marshal(genre)
-	if err != nil {
-		fmt.Println(err)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(out)
-
-}
-
 // implemented JWT Token authentication for userLogin
 func generateJWT(email string) (string, error) {
-	expirationTime := time.Now().Add(5 * time.Minute)
+	expirationTime := time.Now().Add(30 * time.Minute)
 	claims := models.User{
 		Email: email,
 		StandardClaims: jwt.StandardClaims{
@@ -113,7 +117,7 @@ func generateJWT(email string) (string, error) {
 	if err == nil {
 		return tokenString, nil
 	}
-	return "", nil
+	return tokenString, nil
 }
 
 // verifyToken
@@ -126,14 +130,14 @@ func VerifyToken(tokenString string) (email string, err error) {
 	if token != nil {
 		return claims.Email, nil
 	}
-	return "", err
+	return tokenString, err
 }
 
 // BELOW CODE IS FOR SIGNUP PART
 func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != "POST" {
-		http.Error(w, "method not allowed", http.StatusNotFound)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	} else {
 		if err := r.ParseForm(); err != nil {
@@ -192,6 +196,7 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
+	w.Header().Set("Content-Type", "application/json")
 }
 
 // BELOW CODE HANDLES THE LOGIN DETAILS
@@ -200,7 +205,9 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "method not found", http.StatusMethodNotAllowed)
 		return
+
 	} else {
+
 		if err := r.ParseForm(); err != nil {
 			panic(err)
 		}
@@ -216,26 +223,35 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 		password, _ := jsonDatamap["password"].(string)
 
 		// login credentials
-
 		db_user, db_err := database.Db.GetUserByEmail(email)
 		if db_err != nil {
-			// send message to client - user doesn't exist
+			// SEND MESSAGE TO CLIENT - user doesn't exist
 			fmt.Printf("\nError: %v\n", &db_err)
 			fmt.Println(db_err)
 			json.NewEncoder(w).Encode(http.StatusNotFound)
 		} else {
+
 			fmt.Printf("\n\n DB info: %v\n\n", &db_user)
 			password_err := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
+
 			if password_err != nil {
 				json.NewEncoder(w).Encode(http.StatusNotFound)
 			} else {
+
 				fmt.Printf("\n\n valid password...? : %v \n\n", password_err == nil)
 				json.NewEncoder(w).Encode(http.StatusFound)
+
+				var Token models.User
+				// JWT Token for auth
+				Token.Token, err = generateJWT(email)
+				if err != nil {
+					log.Panic(err)
+				}
+				fmt.Printf("login jwt %s \n", Token.Token)
 				return
+
 			}
 		}
-
-		// send msg to client - password is invalid
 
 		if err != nil {
 			panic(err)
@@ -244,5 +260,40 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 		json.Marshal(db_user.Email)
 		fmt.Printf("marshalled user %s\n", db_user.Email)
 		fmt.Printf("marshalled password: %s\n", db_user.Password)
+	}
+}
+
+// ADD	TO FAVOURITES
+func (App *Application) Favourites(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		if err := r.ParseForm(); err != nil {
+			log.Panic(err)
+		}
+
+		PageBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		StringPage := string(PageBody)
+		PageFav := make(map[string]interface{})
+
+		json.Unmarshal([]byte(StringPage), &PageFav)
+
+		fav := PageFav["AddFav"].(string)
+		var addFav *models.Book
+
+		addFav = &models.Book{
+			Title: fav,
+		}
+
+		getBase, err := database.Db.GetFavourites(addFav)
+		if err != nil {
+			log.Panic(err)
+		}
+		DBase, _ := json.Marshal(getBase)
+		fmt.Printf("Handler.go part %s \n ", string(DBase))
+
+	} else {
+		fmt.Println(http.StatusMethodNotAllowed)
 	}
 }

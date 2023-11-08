@@ -6,7 +6,7 @@ const Home = () => {
       <div className="text-center">
         <h4 className="text-center">Find a Book to read</h4>
         <hr className="mb-1"></hr>
-        <Link to="/books">
+        <Link to="/books" >
           <img className="img-fluid img-thumbnail" src={Lib} alt="books.img"></img>
         </Link>
       </div>

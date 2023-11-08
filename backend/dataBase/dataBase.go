@@ -6,17 +6,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"log"
 )
 
 type DataBase struct {
-	client         *mongo.Client
-	userCollection *mongo.Collection
+	client          *mongo.Client
+	userCollection  *mongo.Collection
+	BooksCollection *mongo.Collection
+	FavCollection   *mongo.Collection
 }
 
 type rmUser struct {
@@ -28,13 +28,11 @@ var Db DataBase
 func (Db *DataBase) Initialization() (*mongo.Client, error) {
 
 	var err error
+	// here mongo.connect is used only for localhost connection for standard connection use mongo.NewClient() method
 	Db.client, err = mongo.Connect(context.Background())
-//	Db.client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&AppName=mongosh+1.8.2")) 
 	if err != nil {
 		log.Fatal(err)
 	}
-//	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-//	Db.client.Connect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,7 +45,13 @@ func (Db *DataBase) Initialization() (*mongo.Client, error) {
 	// BELOW THIS IS USED FOR DATABASE NAME AND COLLECTION
 
 	// this is to store signup part
-	Db.userCollection = Db.client.Database("signup").Collection("userData")
+	Db.userCollection = Db.client.Database("BookRecommender").Collection("userData")
+
+	// BELOW BLOCK IS USED FOR BOOKS COLLECTION
+	Db.BooksCollection = Db.client.Database("BookRecommender").Collection("Books")
+
+	// THIS IS USED FOR FAVOURITES COLLECTION IN DATABASE
+	Db.FavCollection = Db.client.Database("BookRecommender").Collection("FavCollection")
 
 	return &mongo.Client{}, nil
 }
@@ -89,4 +93,57 @@ func (Db *DataBase) GetUserByEmail(email string) (models.User, error) {
 
 	}
 	return user, err
+}
+
+// BELOW CODE IS FOR GETTING ALL BOOKS FORM THE DATABASE
+func (Db *DataBase) GetAllBooks() (*models.Book, error) {
+
+	var book models.Book
+
+	allbooks, err := Db.BooksCollection.Find(context.TODO(), bson.D{})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for i := 0; allbooks.Next(context.TODO()); i++ {
+		if err := allbooks.Decode(&book); err != nil {
+			log.Panic(err)
+		}
+		json.Marshal(book)
+		fmt.Println("The Data of the Books are: ", i, book)
+	}
+
+	return &book, nil
+}
+
+func (Db *DataBase) GetFavourites(Id *models.Book) (*mongo.Collection, error) {
+
+	favBookFind := Db.BooksCollection.FindOne(context.TODO(), Id)
+	if favBookFind == nil {
+		favBookInsert, err := Db.FavCollection.InsertOne(context.TODO(), Id)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		DecodeJson, _ := json.Marshal(favBookInsert)
+		fmt.Println(DecodeJson)
+		fmt.Println(favBookInsert.InsertedID)
+	}
+	return &mongo.Collection{}, nil
+}
+
+func (Db *DataBase) GenreBooks(bookGenre string) (models.Book, error) {
+
+	var book models.Book
+	var err error
+	FindAction, err := Db.BooksCollection.Find(context.TODO(), bson.M{"Type": bookGenre})
+	for i := 0; FindAction.Next(context.TODO()); i++ {
+		if err := FindAction.Decode(&book); err != nil {
+			log.Panic(err)
+		}
+		json.Marshal(book)
+		fmt.Println("The Requested Genre books are: ", i, book)
+	}
+
+	return book, err
 }

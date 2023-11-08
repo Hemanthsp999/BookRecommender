@@ -15,13 +15,14 @@ func (App *Application) Routes() http.Handler {
 
 	mux.Use(App.EnableCORS)
 
-	mux.Get("/", App.Home)
+	mux.Options("/", App.Home)
 
 	mux.Get("/books", App.AllBooks)
 
-	mux.Get("/genres", App.Genre)
+	mux.Get("/books/action", App.GetByGenre)
 
-	// below is for both signup and signin part
+	mux.Post("/fav", App.Favourites)
+
 	mux.Post("/login", App.Login)
 
 	mux.Post("/signup", App.Signup)

@@ -11,6 +11,7 @@ type User struct {
 	LastName  string    `json:"lname" validate:"required,min=2,max=100"`
 	Email     string    `json:"email" validate:"email,required"`
 	Password  string    `json:"pass" validate:"required,min=5"`
+	Token     string    `json:"Token" validate:"required,min=5"`
 	CreatedAt time.Time `json:"created at"`
 	UpdatedAt time.Time `json:"updated at"`
 	jwt.StandardClaims
