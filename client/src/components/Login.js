@@ -33,10 +33,10 @@ const Login = () => {
       },
       body: obj,
     })
-      .then(function(response) {
+      .then(function (response) {
         return response.json();
       })
-      .then(function(data) {
+      .then(function (data) {
         console.log("server response", data);
         try {
           if (data === 404) {
@@ -66,26 +66,14 @@ const Login = () => {
       <hr />
 
       <form action="/login" method="post" onSubmit={handleSubmit}>
-        <Input
-          title="Email Address"
-          type="email"
-          className="form-control"
-          name="email"
-          autoComplete="email-new"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Input
-          title="Password"
-          type="password"
-          className="form-control"
-          name="password"
-          autoComplete="password-new"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <div className="form-floating mb-3">
+          <input id="floatingEmail" className="form-control" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="abc@gmail.com" autoComplete="email-new" required/>
+          <label htmlFor="floatingEmail">Email</label>
+        </div>
+        <div className="form-floating">
+          <input id="floatingId" className="form-control" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="pass" autoComplete="password-new" required/>
+          <label htmlFor="floatingId">Password</label>
+        </div>
         <hr />
 
         <input type="submit" className="btn btn-primary" value="Login" />

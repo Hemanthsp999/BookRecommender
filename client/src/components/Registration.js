@@ -76,66 +76,69 @@ const Registration = () => {
       <hr />
 
       <form action="/signup" method="post" onSubmit={handleSubmit} id="myForm">
-        <label>FirstName</label>
-        <input
-          type="text"
-          name="FirstName"
-          placeholder="Enter First Name"
-          className="form-control"
-          autoComplete="name-new"
-          value={fname}
-          onChange={(e) => setFname(e.target.value)}
-          required
-        />
+        <div className="form-floating mb-3">
+          <input
+            className="form-control"
+            id="floatingFname"
+            type="text"
+            name="FirstName"
+            placeholder="firstNae"
+            autoComplete="name-new"
+            value={fname}
+            onChange={(e) => setFname(e.target.value)}
+            required
+          />
+          <label htmlFor="floatingFname">First Name</label>
+        </div>
         <br />
-        <label>Last Name</label>
-        <input
-          type="text"
-          name="LastName"
-          placeholder="Enter Last Name"
-          className="form-control"
-          autoComplete="name-new"
-          value={lname}
-          onChange={(e) => setLname(e.target.value)}
-          required
-        />
+        <div className="form-floating mb-3">
+          <input
+            className="form-control"
+            id="floatingLName"
+            type="text"
+            name="LastName"
+            placeholder="lastName"
+            autoComplete="name-new"
+            value={lname}
+            onChange={(e) => setLname(e.target.value)}
+            required
+          />
+          <label htmlFor="floatingLName">Last Name</label>
+        </div>
         <br />
-        <label>Email Address</label>
-        <input
-          type="email"
-          name="Email"
-          placeholder="Enter Email Address"
-          className="form-control"
-          autoComplete="email-new"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <div className="form-floating mb-3">
+          <input
+            className="form-control"
+            id="floatingEmail"
+            type="email"
+            name="Email"
+            placeholder="Email"
+            autoComplete="name-new"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <label htmlFor="floatingEmail">Email</label>
+        </div>
         <br />
-        <label>Password</label>
-        <input
-          type="password"
-          name="Password"
-          placeholder="Minimum 5 characters"
-          minLength={5}
-          className="form-control"
-          autoComplete="password-new"
-          value={pass}
-          onChange={(e) => setPass(e.target.value)}
-          required
-        />
+        <div className="form-floating">
+          <input
+            className="form-control"
+            id="floatingPassword"
+            type="password"
+            placeholder="pass"
+            autoComplete="password-new"
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            required
+          />
+          <label htmlFor="floatingPassword">Password</label>
+        </div>
         <br />
-        <label>Re-Enter Password</label>
-        <input
-          type="password"
-          name="Password"
-          minLength={5}
-          className="form-control"
-          value={rePass}
-          onChange={(e) => setRepass(e.target.value)}
-          autoComplete="password-new"
-          required
-        />
+        <div className="form-floating">
+          <input className="form-control" id="floatingRePassword" type="password" placeholder="repass" value={rePass} onChange={(e) => setRepass(e.target.value)} required/>
+          <label htmlFor="floatingPassword">Re-Enter Password</label>
+        </div>
         <br />
         <input
           type="submit"
