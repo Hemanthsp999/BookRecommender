@@ -34,7 +34,7 @@ function App() {
                 fontWeight: "bold",
                 fontSize: "70%",
                 flexWrap: "nowrap",
-                position: "fixed",
+                position: "relative",
               }}
             >
               BookMatch
