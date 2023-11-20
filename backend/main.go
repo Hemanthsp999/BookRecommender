@@ -24,7 +24,7 @@ func main() {
 	log.Println("starting server at port", port)
 	http.HandleFunc("/", App.Home)
 	http.HandleFunc("/books", App.AllBooks)
-	http.HandleFunc("/books/genre", App.GetByGenre)
+	http.HandleFunc("/books/id", App.GetBook)
 	http.HandleFunc("/fav", App.Favourites)
 	http.HandleFunc("/login", App.Login)
 	http.HandleFunc("/signup", App.Signup)

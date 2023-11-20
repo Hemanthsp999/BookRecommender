@@ -132,18 +132,22 @@ func (Db *DataBase) GetFavourites(Id *models.Book) (*mongo.Collection, error) {
 	return &mongo.Collection{}, nil
 }
 
-func (Db *DataBase) GenreBooks(bookGenre string) (models.Book, error) {
+func (Db *DataBase) GetBookById(bookGenre string) (models.Book, error) {
 
 	var book models.Book
 	var err error
-	FindAction, err := Db.BooksCollection.Find(context.TODO(), bson.M{"Type": bookGenre})
-	for i := 0; FindAction.Next(context.TODO()); i++ {
-		if err := FindAction.Decode(&book); err != nil {
-			log.Panic(err)
-		}
-		json.Marshal(book)
-		fmt.Println("The Requested Genre books are: ", i, book)
+	FindAction := Db.BooksCollection.FindOne(context.TODO(), bson.M{"Title": bookGenre}).Decode(&book)
+	DecodeJson, err := json.Marshal(book)
+	if err != nil {
+		log.Panic(err)
 	}
 
+	if FindAction == nil {
+		fmt.Printf("The books is there %s\n", DecodeJson)
+
+	} else {
+		fmt.Println("Book is not there")
+		err = errors.New("book is not there")
+	}
 	return book, err
 }

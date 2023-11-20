@@ -58,14 +58,14 @@ func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 		fmt.Print("\nThis is from Handler.go\t", DataBook)
-		json.NewEncoder(w).Encode(http.StatusFound)
+		json.NewEncoder(w).Encode(DataBook)
 
 	} else {
 		fmt.Println(http.StatusMethodNotAllowed)
 	}
 }
 
-func (App *Application) GetByGenre(w http.ResponseWriter, r *http.Request) {
+func (App *Application) GetBook(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		if err := r.ParseForm(); err != nil {
 			log.Panic(err)
@@ -77,17 +77,18 @@ func (App *Application) GetByGenre(w http.ResponseWriter, r *http.Request) {
 			log.Panic(err)
 		}
 		sBody := string(body)
-		genreType := make(map[string]interface{})
-		json.Unmarshal([]byte(sBody), &genreType)
+		BookType := make(map[string]interface{})
+		json.Unmarshal([]byte(sBody), &BookType)
 
-		bookGenre := genreType["Type"].(string)
-		DataBaseAction, err := database.Db.GenreBooks(bookGenre)
+		bookGenre, _ := BookType["Title"].(string)
+		DataBaseAction, err := database.Db.GetBookById(bookGenre)
 		if err != nil {
 			log.Panic(err)
 			return
 		} else {
 			fmt.Println(DataBaseAction)
-			json.NewEncoder(w).Encode(http.StatusAccepted)
+			json.NewEncoder(w).Encode(&DataBaseAction)
+			fmt.Fprint(w, json.NewEncoder(w).Encode(http.StatusOK))
 		}
 
 	} else {
