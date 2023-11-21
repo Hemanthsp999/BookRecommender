@@ -16,10 +16,12 @@ const Books = () => {
   const Images = Object.assign([
     {
       id: 1,
+      title: "Atomic Habits",
       ImgSource: AtomicHabit,
     },
     {
       id: 2,
+      title: "Die Hard",
       ImgSource: DieHard,
     },
     {
@@ -56,21 +58,18 @@ const Books = () => {
     },
   ]);
 
-  const handleOnClick = (id) => {
-    try {
-      fetch("http://localhost:8080/books/id", {
-        method: "GET",
-        params: JSON.parse(id),
-      })
-        .then((response) => {
-          console.log(response.data);
-        })
-        .catch((e) => {
-          console.error(e);
-        });
-    } catch {
-      console.log("exception");
+  const handleOnClick = (title) => {
+    const jsonObj = {
+      title: "Atomic Habits"
     }
+    const Jobj = jsonObj
+    console.log("data",Jobj);
+    var Obj = JSON.stringify(Jobj);
+    axios
+      .get("http://localhost:8080/books/id", { params: Obj })
+      .then(function(response){
+        return console.log(response.data)
+      });
   };
 
   return (
@@ -91,6 +90,7 @@ const Books = () => {
                       className="img-fluid rounded mx-2 img-hover img-center"
                       style={{ height: "200px", width: "150px" }}
                       alt="...."
+                      onClick={handleOnClick(image.title)}
                     />
                   </Link>
                 </div>
