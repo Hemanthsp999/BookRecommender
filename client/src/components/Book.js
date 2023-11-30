@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-const Book = () => {
+const Book = (props) => {
   /* individual Books shelf  */
+
+  const Id = props.Id;
+  console.log(Id);
 
   const [inBook, setInBook] = useState({});
 
@@ -19,11 +22,13 @@ const Book = () => {
     setInBook(b);
   }, [id]);
 
+
   return (
     <div>
       <h3>Book: {inBook.title}</h3>
       <small>
         <em>
+          Id: {inBook.id},
           Author:<b>{inBook.author}</b>, ReleaseDate: {inBook.releaseDate}
         </em>
       </small>
