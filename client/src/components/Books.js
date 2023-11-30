@@ -10,10 +10,10 @@ import Alone from "./images/BooksImg/TheArtOfBeingAlone.jpg";
 import AttitudeIsEveryThing from "./images/BooksImg/AttitudeIsEveryThing.jpg";
 import { ScrollingCarousel } from "@trendyol-js/react-carousel";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import Book from "./Book";
 
 const Books = () => {
-  const Images = Object.assign([
+  const Images = [
     {
       id: 1,
       title: "Atomic Habits",
@@ -56,21 +56,13 @@ const Books = () => {
       id: 10,
       ImgSource: NotGivingAFuck,
     },
-  ]);
+  ];
 
-  const handleOnClick = (title) => {
-    const jsonObj = {
-      title: "Atomic Habits"
-    }
-    const Jobj = jsonObj
-    console.log("data",Jobj);
-    var Obj = JSON.stringify(Jobj);
-    axios
-      .get("http://localhost:8080/books/id", { params: Obj })
-      .then(function(response){
-        return console.log(response.data)
-      });
-  };
+  function onComponentClick(id) {
+    console.log("this is in books part", id);
+    const d = id;
+    <Book Id={d} />;
+  }
 
   return (
     <div className="container">
@@ -81,16 +73,16 @@ const Books = () => {
           </h3>
           <ScrollingCarousel className="m-1">
             {Images.map((image) => {
-              console.log(typeof image.id);
               return (
                 <div key={image.id}>
-                  <Link className="text-decoration-none">
+                  {console.log(image.id)}
+                  <Link className="text-decoration-none" to="/books/:id">
                     <img
                       src={image.ImgSource}
                       className="img-fluid rounded mx-2 img-hover img-center"
                       style={{ height: "200px", width: "150px" }}
                       alt="...."
-                      onClick={handleOnClick(image.title)}
+                      onClick={onComponentClick(image.id)}
                     />
                   </Link>
                 </div>
