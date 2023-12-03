@@ -1,54 +1,96 @@
-import { useEffect, useState } from "react";
+import Dopamine from "./images/BooksImg/DopamineDetox.jpg";
+import AtomicHabit from "./images/BooksImg/atomicHabits.jpg";
+import HungerGames from "./images/BooksImg/TheHungerGames.jpg";
+import WorldWar from "./images/BooksImg/WorldWarZ.jpg";
+import DieHard from "./images/BooksImg/DieHard.jpg";
+import PlayerOne from "./images/BooksImg/TheReadyPlayerOne.jpg";
+import TheMonk from "./images/BooksImg/TheMonk.jpg";
+import NotGivingAFuck from "./images/BooksImg/NotGivingAFuck.jpg";
+import Alone from "./images/BooksImg/TheArtOfBeingAlone.jpg";
+import AttitudeIsEveryThing from "./images/BooksImg/AttitudeIsEveryThing.jpg";
+import { ScrollingCarousel } from "@trendyol-js/react-carousel";
 import { Link } from "react-router-dom";
+import Book from "./Book";
 
 const Books = () => {
-  const [books, setBooks] = useState([]);
+  const Images = [
+    {
+      id: 1,
+      title: "Atomic Habits",
+      ImgSource: AtomicHabit,
+    },
+    {
+      id: 2,
+      title: "Die Hard",
+      ImgSource: DieHard,
+    },
+    {
+      id: 3,
+      ImgSource: HungerGames,
+    },
+    {
+      id: 4,
+      ImgSource: WorldWar,
+    },
+    {
+      id: 5,
+      ImgSource: PlayerOne,
+    },
+    {
+      id: 6,
+      ImgSource: Dopamine,
+    },
+    {
+      id: 7,
+      ImgSource: AttitudeIsEveryThing,
+    },
+    {
+      id: 8,
+      ImgSource: Alone,
+    },
+    {
+      id: 9,
+      ImgSource: TheMonk,
+    },
+    {
+      id: 10,
+      ImgSource: NotGivingAFuck,
+    },
+  ];
 
-  useEffect(() => {
-    const headers = new Headers();
-    headers.append("Content-Type", "application/json");
-
-    const requestOption = {
-      method: "GET",
-      headers: headers,
-    }
-
-    fetch(`http://localhost:8080/books`, requestOption)
-      .then((response) => response.json())
-      .then((data) => {
-        setBooks(data);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }, []);
+  function onComponentClick(id) {
+    console.log("this is in books part", id);
+    const d = id;
+    <Book Id={d} />;
+  }
 
   return (
     <div className="container">
-      <h2>Books</h2>
-      <hr />
-      <table className="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th>Books</th>
-            <th>Author</th>
-            <th>Release Date</th>
-            <th>Ratings</th>
-          </tr>
-        </thead>
-        <tbody>
-          {books.map((b) => (
-            <tr key={b.id}>
-              <td>
-                <Link to={`/books/${b.id}`}>{b.title}</Link>
-              </td>
-              <td>{b.author}</td>
-              <td>{b.releaseDate}</td>
-              <td>{b.rating}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="row">
+        <div className="col">
+          <h3 className="mx-1 fs-5" style={{ fontFamily: "sans-serif" }}>
+            Recommended Books
+          </h3>
+          <ScrollingCarousel className="m-1">
+            {Images.map((image) => {
+              return (
+                <div key={image.id}>
+                  {console.log(image.id)}
+                  <Link className="text-decoration-none" to="/books/:id">
+                    <img
+                      src={image.ImgSource}
+                      className="img-fluid rounded mx-2 img-hover img-center"
+                      style={{ height: "200px", width: "150px" }}
+                      alt="...."
+                      onClick={onComponentClick(image.id)}
+                    />
+                  </Link>
+                </div>
+              );
+            })}
+          </ScrollingCarousel>
+        </div>
+      </div>
     </div>
   );
 };

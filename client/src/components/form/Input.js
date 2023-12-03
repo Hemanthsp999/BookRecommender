@@ -1,22 +1,19 @@
 import { forwardRef } from "react";
-const Input = forwardRef((props, ref) => {
+const Input = forwardRef((props,ref) => {
   return (
     <div className="mb-3">
-      <label htmlFor={props.name} className="form-label">
-        {props.title}
-      </label>
       <input
+        title={props.title}
         type={props.type}
         className={props.className}
-        id={props.name}
-        ref={props.ref}
-        name={props.name}
+        id={props.id}
         placeholder={props.placeholder}
+        value={props.value}
         onChange={props.onChange}
         autoComplete={props.autoComplete}
-        value={props.value}
         required
       />
+      <label htmlFor={props.id}>{props.title}</label>
 
       <div className={props.errorDiv}>{props.errorMsg}</div>
     </div>
