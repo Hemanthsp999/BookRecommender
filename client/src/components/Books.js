@@ -61,7 +61,7 @@ const Books = () => {
   function onComponentClick(id) {
     console.log("this is in books part", id);
     const d = id;
-    <Book Id={d} />;
+    <Book Id={d} />
   }
 
   return (
@@ -76,7 +76,7 @@ const Books = () => {
               return (
                 <div key={image.id}>
                   {console.log(image.id)}
-                  <Link className="text-decoration-none" to="/books/:id">
+                  <Link className="text-decoration-none" to={`/book/${image.id}`}>
                     <img
                       src={image.ImgSource}
                       className="img-fluid rounded mx-2 img-hover img-center"
