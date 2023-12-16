@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -68,33 +69,20 @@ func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 func (App *Application) GetBook(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		if err := r.ParseForm(); err != nil {
-			log.Panic(err)
-			return
+			panic(err)
 		}
 
-		body, err := ioutil.ReadAll(r.Body)
+		body, _ := ioutil.ReadAll(r.Body)
+		sb := string(body)
+		var urlId primitive.ObjectID
+		json.Unmarshal([]byte(sb), &urlId)
+		fmt.Println(urlId.Hex())
+		getBook, err := database.Db.GetBookById(urlId)
 		if err != nil {
-			log.Panic(err)
+			panic(err)
 		}
-		sBody := string(body)
-		BookType := make(map[string]interface{})
-		json.Unmarshal([]byte(sBody), &BookType)
-
-		bookGenre, _ := BookType["Title"].(string)
-		DataBaseAction, err := database.Db.GetBookById(bookGenre)
-		if err != nil {
-			log.Panic(err)
-			return
-		} else {
-			fmt.Println(DataBaseAction)
-			json.NewEncoder(w).Encode(&DataBaseAction)
-			fmt.Fprint(w, json.NewEncoder(w).Encode(http.StatusOK))
-		}
-
-	} else {
-		fmt.Println(http.StatusMethodNotAllowed)
+		json.NewEncoder(w).Encode(&getBook)
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 }
 

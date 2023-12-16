@@ -19,7 +19,7 @@ func (App *Application) Routes() http.Handler {
 
 	mux.Get("/books", App.AllBooks)
 
-	mux.Get("/books/id", App.GetBook)
+	mux.Get("/book/${id}", App.GetBook)
 
 	mux.Post("/fav", App.Favourites)
 

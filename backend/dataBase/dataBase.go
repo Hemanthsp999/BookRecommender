@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"log"
 )
 
 type DataBase struct {
@@ -132,14 +134,14 @@ func (Db *DataBase) GetFavourites(Id *models.Book) (*mongo.Collection, error) {
 	return &mongo.Collection{}, nil
 }
 
-func (Db *DataBase) GetBookById(bookGenre string) (models.Book, error) {
+func (Db *DataBase) GetBookById(bookId primitive.ObjectID) (models.Book, error) {
 
 	var book models.Book
 	var err error
-	FindAction := Db.BooksCollection.FindOne(context.TODO(), bson.M{"Title": bookGenre}).Decode(&book)
+	FindAction := Db.BooksCollection.FindOne(context.TODO(), bson.M{"_id": bookId}).Decode(&book)
 	DecodeJson, err := json.Marshal(book)
 	if err != nil {
-		log.Panic(err)
+		log.Panic("error ",err)
 	}
 
 	if FindAction == nil {
