@@ -138,10 +138,10 @@ func (Db *DataBase) GetBookById(bookId primitive.ObjectID) (models.Book, error) 
 
 	var book models.Book
 	var err error
-	FindAction := Db.BooksCollection.FindOne(context.TODO(), bson.M{"_id": bookId}).Decode(&book)
+	FindAction := Db.BooksCollection.FindOne(context.TODO(), bson.M{"_id": "65425bd46b356c76812b31d1"}).Decode(&book)
 	DecodeJson, err := json.Marshal(book)
 	if err != nil {
-		log.Panic("error ",err)
+		log.Panic("error ", err)
 	}
 
 	if FindAction == nil {

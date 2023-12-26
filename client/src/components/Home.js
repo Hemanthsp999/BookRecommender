@@ -9,7 +9,7 @@ const Home = () => {
           className="text-center"
           style={{ fontFamily: "monospace", fontWeight: "bold" }}
         >
-          Feel Free to read a Book!..
+          Feel Free to read Books!...
         </h4>
         <hr className="mb-1"></hr>
         <Link to="/books">

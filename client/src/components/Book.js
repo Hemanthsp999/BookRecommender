@@ -8,6 +8,17 @@ const Book = () => {
 
   let { id } = useParams();
 
+  const getServer = async (id) => {
+    console.log(id);
+    fetch(`http://localhost:8080/book/${id}`)
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
+        console.log(data);
+      });
+  };
+
   return (
     <div>
       <h3>Book: {inBook.title}</h3>
