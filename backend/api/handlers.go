@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -66,35 +67,33 @@ func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (App *Application) GetBook(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		if err := r.ParseForm(); err != nil {
-			log.Panic(err)
-			return
-		}
-
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			log.Panic(err)
-		}
-		sBody := string(body)
-		BookType := make(map[string]interface{})
-		json.Unmarshal([]byte(sBody), &BookType)
-
-		bookGenre, _ := BookType["Title"].(string)
-		DataBaseAction, err := database.Db.GetBookById(bookGenre)
-		if err != nil {
-			log.Panic(err)
-			return
-		} else {
-			fmt.Println(DataBaseAction)
-			json.NewEncoder(w).Encode(&DataBaseAction)
-			fmt.Fprint(w, json.NewEncoder(w).Encode(http.StatusOK))
-		}
-
+	if r.Method != "GET" {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
 	} else {
-		fmt.Println(http.StatusMethodNotAllowed)
-	}
+		urlId := r.URL.Query().Get("id")
+		fmt.Println(string(urlId))
+		if !primitive.IsValidObjectID(urlId) {
+			http.Error(w, "wrong object id", http.StatusBadGateway)
+		}
 
+		ObjectId, err := primitive.ObjectIDFromHex(urlId)
+		if err != nil {
+			http.Error(w, "Invalid object Id", http.StatusBadRequest)
+			return
+		}
+
+		getBook, err := database.Db.GetBookById(ObjectId)
+		if err != nil {
+			http.Error(w, "getting error in finding books", http.StatusNotFound)
+			panic(err)
+		}
+
+		if err := json.NewEncoder(w).Encode(&getBook); err != nil {
+			http.Error(w, "data not found", http.StatusInternalServerError)
+		}
+
+	}
 	w.Header().Set("Content-Type", "application/json")
 }
 
@@ -136,7 +135,7 @@ func VerifyToken(tokenString string) (email string, err error) {
 
 // BELOW CODE IS FOR SIGNUP PART
 func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
-
+	// added http.methodPost instead POST
 	if r.Method != "POST" {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -167,10 +166,13 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 			hashPass, _ := Hash(pass)
 			fmt.Printf("\n\n\n sent password is %s \n", pass)
 			person = models.User{
+				Id:        primitive.NewObjectID(),
 				FirstName: fname,
 				LastName:  lname,
 				Email:     email,
 				Password:  hashPass,
+				CreatedAt: time.Now(),
+				User_Id:   string(person.Id.Hex()),
 			}
 
 			checkEmail, _ := database.Db.GetUserByEmail(person.Email)
@@ -236,12 +238,16 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 			password_err := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
 
 			if password_err != nil {
-				json.NewEncoder(w).Encode(http.StatusNotFound)
+				http.Error(w, "Password not found", http.StatusNotFound)
 			} else {
 
 				fmt.Printf("\n\n valid password...? : %v \n\n", password_err == nil)
 				json.NewEncoder(w).Encode(http.StatusFound)
 
+				user := models.User{
+					UpdatedAt: time.Now(),
+				}
+				fmt.Println(user)
 				var Token models.User
 				// JWT Token for auth
 				Token.Token, err = generateJWT(email)
@@ -258,9 +264,6 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 
-		json.Marshal(db_user.Email)
-		fmt.Printf("marshalled user %s\n", db_user.Email)
-		fmt.Printf("marshalled password: %s\n", db_user.Password)
 	}
 }
 
