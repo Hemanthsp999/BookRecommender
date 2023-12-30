@@ -60,18 +60,6 @@ const Books = () => {
     },
   ];
 
-  /*
-  const getServer = async (id) => {
-    fetch(`http://localhost:8080/book/${id}`)
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(data) {
-        console.log(data);
-      });
-  };
-  */
-
   return (
     <div className="container">
       <div className="row">
@@ -83,29 +71,24 @@ const Books = () => {
             {Images.map((image) => {
               return (
                 <div key={image.id}>
-                  <Link
-                    className="text-decoration-none"
-                    to={`/book/${image.id}`}
-                  >
-                    <img
-                      src={image.ImgSource}
-                      className="img-fluid rounded mx-2 img-hover img-center"
-                      style={{ height: "200px", width: "150px" }}
-                      alt="...."
-                      onClick={function getServer(id) {
-                        axios
-                          .get(`http://localhost:8080/book/${id}`, {
-                            params: id,
-                          })
-                          .then(function(response) {
-                            console.log(response.data);
-                          })
-                          .catch((e) => {
-                            console.error(e);
-                          });
-                      }}
-                    />
-                  </Link>
+                  <img
+                    src={image.ImgSource}
+                    className="img-fluid rounded mx-2 img-hover img-center"
+                    style={{ height: "200px", width: "150px" }}
+                    alt="...."
+                    onClick={function getServer(id) {
+                      axios
+                        .get(`http://localhost:8080/book/${id}`, {
+                          params: id,
+                        })
+                        .then(function (response) {
+                          console.log(response.data);
+                        })
+                        .catch((e) => {
+                          console.error(e);
+                        });
+                    }}
+                  />
                 </div>
               );
             })}
