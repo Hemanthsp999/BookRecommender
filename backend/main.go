@@ -22,18 +22,27 @@ func main() {
 		fmt.Println("Error in connecting to DataBase", DataBase)
 	}
 	log.Println("starting server at port", port)
-	http.HandleFunc("/", App.Home)
-	http.HandleFunc("/books", App.AllBooks)
-	http.HandleFunc("/book/${id}", App.GetBook)
-	http.HandleFunc("/fav", App.Favourites)
-	http.HandleFunc("/login", App.Login)
-	http.HandleFunc("/signup", App.Signup)
+
+	router := http.NewServeMux()
+	router.HandleFunc("/", App.Home)
+	router.HandleFunc("/books", App.AllBooks)
+	router.HandleFunc("/book", App.GetBook)
+	router.HandleFunc("/fav", App.Favourites)
+	router.HandleFunc("/login", App.Login)
+	router.HandleFunc("/signup", App.Signup)
+
+	server := http.Server{
+		Addr: ":8080",
+		Handler: router,
+	}
+
+	server.ListenAndServe()
 
 	// Starting web server on port 8080
-	myServer := http.ListenAndServe(fmt.Sprintf(":%d", port), App.Routes())
-
-	if myServer != nil {
-		log.Fatal(myServer)
-	}
+	// myServer := http.ListenAndServe(fmt.Sprintf(":%d", port), App.Routes())
+	//
+	// if myServer != nil {
+	// 	log.Fatal(myServer)
+	// }
 
 }
