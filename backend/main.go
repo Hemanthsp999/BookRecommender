@@ -38,11 +38,5 @@ func main() {
 
 	server.ListenAndServe()
 
-	// Starting web server on port 8080
-	// myServer := http.ListenAndServe(fmt.Sprintf(":%d", port), App.Routes())
-	//
-	// if myServer != nil {
-	// 	log.Fatal(myServer)
-	// }
-
+	
 }
