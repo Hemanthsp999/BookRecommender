@@ -31,12 +31,13 @@ func main() {
 	router.HandleFunc("/login", App.Login)
 	router.HandleFunc("/signup", App.Signup)
 
+	// Starting web server on port 8080
 	server := http.Server{
-		Addr: ":8080",
+		Addr:    ":8080",
 		Handler: router,
 	}
 
 	server.ListenAndServe()
 
-	
+
 }

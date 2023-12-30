@@ -66,19 +66,7 @@ const Books = () => {
     <Book Id={d} />
   }
 
-  /*
-  const getServer = async (id) => {
-    fetch(`http://localhost:8080/book/${id}`)
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(data) {
-        console.log(data);
-      });
-  };
-  */
->>>>>>> ac12d8c6981bea282b504d56007af935f09962aa
-
+ 
   return (
     <div className="container">
       <div className="row">
@@ -111,6 +99,7 @@ const Books = () => {
                       }}
                     />
                   </Link>
+
                 </div>
               );
             })}

@@ -11,10 +11,10 @@ const Book = () => {
   const getServer = async (id) => {
     console.log(id);
     fetch(`http://localhost:8080/book/${id}`)
-      .then(function(response) {
+      .then(function (response) {
         return response.json();
       })
-      .then(function(data) {
+      .then(function (data) {
         console.log(data);
       });
   };
