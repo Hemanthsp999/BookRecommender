@@ -26,7 +26,7 @@ func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/", App.Home)
 	router.HandleFunc("/books", App.AllBooks)
-	router.HandleFunc("/book/${id}", App.GetBook)
+	router.HandleFunc("/book", App.GetBook)
 	router.HandleFunc("/fav", App.Favourites)
 	router.HandleFunc("/login", App.Login)
 	router.HandleFunc("/signup", App.Signup)
@@ -39,13 +39,5 @@ func main() {
 
 	server.ListenAndServe()
 
-	/*
-		myServer := http.ListenAndServe(fmt.Sprintf(":%d", port), App.Routes())
-
-		if myServer != nil {
-			log.Fatal(myServer)
-		}
-
-	*/
 
 }

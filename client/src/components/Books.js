@@ -60,6 +60,13 @@ const Books = () => {
     },
   ];
 
+  function onComponentClick(id) {
+    console.log("this is in books part", id);
+    const d = id;
+    <Book Id={d} />
+  }
+
+ 
   return (
     <div className="container">
       <div className="row">
@@ -71,24 +78,28 @@ const Books = () => {
             {Images.map((image) => {
               return (
                 <div key={image.id}>
-                  <img
-                    src={image.ImgSource}
-                    className="img-fluid rounded mx-2 img-hover img-center"
-                    style={{ height: "200px", width: "150px" }}
-                    alt="...."
-                    onClick={function getServer(id) {
-                      axios
-                        .get(`http://localhost:8080/book/${id}`, {
-                          params: id,
-                        })
-                        .then(function (response) {
-                          console.log(response.data);
-                        })
-                        .catch((e) => {
-                          console.error(e);
-                        });
-                    }}
-                  />
+                  {console.log(image.id)}
+                  <Link className="text-decoration-none" to={`/book/${image.id}`}>
+                    <img
+                      src={image.ImgSource}
+                      className="img-fluid rounded mx-2 img-hover img-center"
+                      style={{ height: "200px", width: "150px" }}
+                      alt="...."
+                      onClick={function getServer(id) {
+                        axios
+                          .get(`http://localhost:8080/book/${id}`, {
+                            params: id,
+                          })
+                          .then(function(response) {
+                            console.log(response.data);
+                          })
+                          .catch((e) => {
+                            console.error(e);
+                          });
+                      }}
+                    />
+                  </Link>
+
                 </div>
               );
             })}
