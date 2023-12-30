@@ -60,13 +60,12 @@ const Books = () => {
     },
   ];
 
-<<<<<<< HEAD
   function onComponentClick(id) {
     console.log("this is in books part", id);
     const d = id;
     <Book Id={d} />
   }
-=======
+
   /*
   const getServer = async (id) => {
     fetch(`http://localhost:8080/book/${id}`)
@@ -91,15 +90,8 @@ const Books = () => {
             {Images.map((image) => {
               return (
                 <div key={image.id}>
-<<<<<<< HEAD
                   {console.log(image.id)}
                   <Link className="text-decoration-none" to={`/book/${image.id}`}>
-=======
-                  <Link
-                    className="text-decoration-none"
-                    to={`/book/${image.id}`}
-                  >
->>>>>>> ac12d8c6981bea282b504d56007af935f09962aa
                     <img
                       src={image.ImgSource}
                       className="img-fluid rounded mx-2 img-hover img-center"
