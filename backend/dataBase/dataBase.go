@@ -61,6 +61,7 @@ func (Db *DataBase) Initialization() (*mongo.Client, error) {
 // BELOW CODE IS USED TO ADD NEW USER TO THE DATABASE
 func (Db *DataBase) AddUser(user *models.User) (*mongo.Collection, error) {
 
+	// Signup User
 	addUser, err := Db.userCollection.InsertOne(context.Background(), user)
 	if err != nil {
 		fmt.Println("add User not perfect")
@@ -78,6 +79,7 @@ func (Db *DataBase) RemoveUser(Id *rmUser) {
 
 func (Db *DataBase) GetUserByEmail(email string) (models.User, error) {
 
+	// Login Verification
 	var user models.User
 
 	validUser := Db.userCollection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
@@ -111,11 +113,14 @@ func (Db *DataBase) GetAllBooks() (*models.Book, error) {
 		if err := allbooks.Decode(&book); err != nil {
 			log.Panic(err)
 		}
-		json.Marshal(book)
-		fmt.Println("The Data of the Books are: ", i, book)
+		BookData, err := json.Marshal(book)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("The Data of the Books are: ", i, string(BookData))
 	}
 
-	return &book, nil
+	return &book, err
 }
 
 func (Db *DataBase) GetFavourites(Id *models.Book) (*mongo.Collection, error) {
@@ -136,6 +141,7 @@ func (Db *DataBase) GetFavourites(Id *models.Book) (*mongo.Collection, error) {
 
 func (Db *DataBase) GetBookById(bookId primitive.ObjectID) (models.Book, error) {
 
+	// Get Book by Genre Type
 	var book models.Book
 	var err error
 	FindAction := Db.BooksCollection.FindOne(context.TODO(), bson.M{"_id": bookId}).Decode(&book)

@@ -42,7 +42,11 @@ func (App *Application) Home(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(out)
+	decodedData, err := w.Write(out)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(decodedData)
 }
 
 func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
@@ -73,9 +77,8 @@ func (App *Application) GetBook(w http.ResponseWriter, r *http.Request) {
 	} else {
 		urlId := r.URL.Query().Get("book_id")
 		fmt.Println(string(urlId))
-		if !primitive.IsValidObjectID(urlId) {
-			http.Error(w, "wrong object id", http.StatusBadGateway)
-		}
+
+		defer r.Body.Close()
 
 		ObjectId, err := primitive.ObjectIDFromHex(urlId)
 		if err != nil {
@@ -153,7 +156,9 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 		}
 		sb := string(body)
 		jsonDataMap := make(map[string]interface{})
-		json.Unmarshal([]byte(sb), &jsonDataMap)
+		if err := json.Unmarshal([]byte(sb), &jsonDataMap); err != nil {
+			http.Error(w, "Error in decoding to Go map", http.StatusExpectationFailed)
+		}
 
 		fname, _ := jsonDataMap["fname"].(string)
 		lname, _ := jsonDataMap["lname"].(string)
@@ -172,14 +177,19 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 				Email:     email,
 				Password:  hashPass,
 				CreatedAt: time.Now(),
-				User_Id:   string(person.Id.Hex()),
 			}
 
 			checkEmail, _ := database.Db.GetUserByEmail(person.Email)
 			if checkEmail.Email == person.Email {
-				json.Marshal(checkEmail.Email)
-				fmt.Printf("user already exists %s\n", checkEmail.Email)
-				json.NewEncoder(w).Encode(http.StatusNotFound)
+				decodeEmail, err := json.Marshal(checkEmail.Email)
+				if err != nil {
+					log.Fatal(err)
+				}
+				fmt.Printf("user already exists %s\n", decodeEmail)
+				if err := json.NewEncoder(w).Encode(http.StatusNotFound); err != nil {
+					log.Fatal(err)
+					return
+				}
 				return
 			} else {
 				fmt.Println(w, "you can now register here ", http.StatusOK)
@@ -189,7 +199,10 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 				}
 				DecodeData, _ := json.Marshal(person)
 				fmt.Printf("\n\nRegistered Data is : %s\n\n", DecodeData)
-				json.NewEncoder(w).Encode(http.StatusAccepted)
+				if err := json.NewEncoder(w).Encode(http.StatusAccepted); err != nil {
+					log.Fatal("Error in sending response to client", err)
+					return
+				}
 
 			}
 
@@ -205,7 +218,7 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 // BELOW CODE HANDLES THE LOGIN DETAILS
 func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		http.Error(w, "method not found", http.StatusMethodNotAllowed)
 		return
 
@@ -220,7 +233,9 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		sd := string(body)
 		jsonDatamap := make(map[string]interface{})
-		json.Unmarshal([]byte(sd), &jsonDatamap)
+		if err := json.Unmarshal([]byte(sd), &jsonDatamap); err != nil {
+			log.Fatal(err)
+		}
 
 		email, _ := jsonDatamap["email"].(string)
 		password, _ := jsonDatamap["password"].(string)
@@ -231,7 +246,9 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 			// SEND MESSAGE TO CLIENT - user doesn't exist
 			fmt.Printf("\nError: %v\n", &db_err)
 			fmt.Println(db_err)
-			json.NewEncoder(w).Encode(http.StatusNotFound)
+			if err := json.NewEncoder(w).Encode(http.StatusNotFound); err != nil {
+				http.Error(w, "Error in sending response to client", http.StatusNotAcceptable)
+			}
 		} else {
 
 			fmt.Printf("\n\n DB info: %v\n\n", &db_user)
@@ -242,7 +259,9 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 			} else {
 
 				fmt.Printf("\n\n valid password...? : %v \n\n", password_err == nil)
-				json.NewEncoder(w).Encode(http.StatusFound)
+				if err := json.NewEncoder(w).Encode(http.StatusFound); err != nil {
+					http.Error(w, "\nPassword not found\n", http.StatusNotFound)
+				}
 
 				user := models.User{
 					UpdatedAt: time.Now(),

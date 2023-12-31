@@ -1,5 +1,7 @@
 package main
 
+//  ..Main File of the Server.. //
+
 import (
 	"backend/api"
 	"backend/dataBase"
@@ -41,5 +43,7 @@ func main() {
 	if err := server.ListenAndServe(); err != nil {
 		fmt.Println("Error in server, Kill the server and restart")
 	}
+
+	defer server.Close()
 
 }

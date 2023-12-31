@@ -8,7 +8,7 @@ import (
 )
 
 type User struct {
-	Id        primitive.ObjectID `bson:"_id"`
+	Id        primitive.ObjectID `json:"id"`
 	FirstName string             `json:"fName" validate:"required,min=2,max=100"`
 	LastName  string             `json:"lname" validate:"required,min=2,max=100"`
 	Email     string             `json:"email" validate:"email,required"`
@@ -17,5 +17,4 @@ type User struct {
 	CreatedAt time.Time          `json:"created_at"`
 	UpdatedAt time.Time          `json:"updated_at"`
 	jwt.StandardClaims
-	User_Id string `json:"user_id"`
 }
