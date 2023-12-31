@@ -67,11 +67,11 @@ func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (App *Application) GetBook(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
+	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	} else {
-		urlId := r.URL.Query().Get("id")
+		urlId := r.URL.Query().Get("book_id")
 		fmt.Println(string(urlId))
 		if !primitive.IsValidObjectID(urlId) {
 			http.Error(w, "wrong object id", http.StatusBadGateway)

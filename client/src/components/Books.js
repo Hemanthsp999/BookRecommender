@@ -10,7 +10,7 @@ import Alone from "./images/BooksImg/TheArtOfBeingAlone.jpg";
 import AttitudeIsEveryThing from "./images/BooksImg/AttitudeIsEveryThing.jpg";
 import { ScrollingCarousel } from "@trendyol-js/react-carousel";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import Book from "./Book";
 
 const Books = () => {
   const Images = [
@@ -35,7 +35,7 @@ const Books = () => {
       ImgSource: WorldWar,
     },
     {
-      id: 5,
+      id: "65425bd46b356c76812b31d3",
       ImgSource: PlayerOne,
     },
     {
@@ -61,12 +61,10 @@ const Books = () => {
   ];
 
   function onComponentClick(id) {
-    console.log("this is in books part", id);
-    const d = id;
-    <Book Id={d} />
+    console.log(id);
+    <Book />;
   }
 
- 
   return (
     <div className="container">
       <div className="row">
@@ -78,28 +76,19 @@ const Books = () => {
             {Images.map((image) => {
               return (
                 <div key={image.id}>
-                  {console.log(image.id)}
-                  <Link className="text-decoration-none" to={`/book/${image.id}`}>
+                  {/*{console.log(image.id)} */}
+                  <Link
+                    className="text-decoration-none"
+                    to={`/book/${image.id}`}
+                  >
                     <img
                       src={image.ImgSource}
                       className="img-fluid rounded mx-2 img-hover img-center"
                       style={{ height: "200px", width: "150px" }}
                       alt="...."
-                      onClick={function getServer(id) {
-                        axios
-                          .get(`http://localhost:8080/book/${id}`, {
-                            params: id,
-                          })
-                          .then(function(response) {
-                            console.log(response.data);
-                          })
-                          .catch((e) => {
-                            console.error(e);
-                          });
-                      }}
+                      onClick={onComponentClick}
                     />
                   </Link>
-
                 </div>
               );
             })}

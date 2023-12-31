@@ -1,4 +1,5 @@
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 const Book = () => {
@@ -8,16 +9,20 @@ const Book = () => {
 
   let { id } = useParams();
 
-  const getServer = async (id) => {
-    console.log(id);
-    fetch(`http://localhost:8080/book/${id}`)
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (data) {
-        console.log(data);
-      });
-  };
+  useEffect(() => {
+    const getServer = async () => {
+      try {
+        let book_id = id
+        const response = await axios.get(`http://localhost:8080/book`,{params: {book_id}});
+        console.log(response.data)
+        setInBook(response.data)
+      } catch(error){
+        console.error(error)
+      }
+    }
+
+    getServer()
+  }, [id])
 
   return (
     <div>
