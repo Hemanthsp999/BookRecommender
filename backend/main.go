@@ -12,6 +12,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/go-chi/chi/v5"
 )
 
 const port = 8080
@@ -30,7 +32,7 @@ func main() {
 	fmt.Println(App.Domain)
 	log.Println("starting server at port", port)
 
-	router := http.NewServeMux()
+	router := chi.NewMux()
 	router.Handle("/", App.EnableCORS(http.HandlerFunc(App.Home)))
 	router.Handle("/signup", App.EnableCORS(http.HandlerFunc(App.Signup)))
 	router.Handle("/login", App.EnableCORS(http.HandlerFunc(App.Login)))
