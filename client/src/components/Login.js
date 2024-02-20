@@ -1,7 +1,11 @@
+import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate, useOutletContext } from "react-router-dom";
 
 const Login = () => {
+  /*         Server link                  */
+  const URL = "http://localhost:8080/login";
+  /*         Server link                  */
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -14,47 +18,29 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const jsonObj = {
-      email: email,
-      password: password,
-    };
-
-    const jsonContainer = jsonObj;
-    console.log(jsonContainer);
-
-    var obj = JSON.stringify(jsonContainer);
-    console.log(obj);
-
-    fetch("http://localhost:8080/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: obj,
-    })
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(data) {
-        console.log("server response", data);
-        try {
-          if (data >= 400 && data <= 500) {
-            setAlertClassName("alert-danger");
-            setAlertMessage("Email not found");
-            setAlertMessage("Password not matching");
-          } else {
-            navigate("/");
-            setJwtToken(true);
-            setAlertMessage("User is checked");
-            setAlertClassName("d-none");
-          }
-        } catch {
-          console.error(e);
-        }
-      })
-      .catch((e) => {
-        console.error(e);
+    try {
+      const fetchPost = await axios.post(URL, {
+        email: email,
+        password: password,
       });
+      const response = await fetchPost.data;
+      if (response >= 400 && response <= 500) {
+        setAlertClassName("alert-danger");
+        setAlertMessage("Invalid Credentails");
+        setTimeout(() => {
+          setAlertClassName("d-none");
+          setAlertMessage("");
+        }, 2000);
+      } else {
+        navigate("/");
+        setJwtToken(true);
+        setAlertMessage("User is checked");
+        setAlertClassName("d-none");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
     // SET STATE TO NULL AFTER SUBMITTING THE FORM
     setEmail("");
     setPassword("");
@@ -97,6 +83,7 @@ const Login = () => {
         <input type="submit" className="btn btn-primary" value="Login" />
         <div className="col text-end" style={{ marginTop: "-35px" }}>
           <Link
+            to={"/forgotPassword"}
             style={{ textDecoration: "none", position: "relative" }}
             className="btn btn-link"
           >

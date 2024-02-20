@@ -17,6 +17,7 @@ import FairyTale from "./components/Genres/FairyTale";
 import Novel from "./components/Genres/Novel";
 import Suspense from "./components/Genres/Suspense";
 import AutoBiography from "./components/Genres/AutoBiography";
+import ForgotPassword from "./components/ForgotPassword";
 
 const router = createBrowserRouter([
   {
@@ -76,6 +77,10 @@ const router = createBrowserRouter([
       {
         path: "/autoBiography",
         element: <AutoBiography />,
+      },
+      {
+        path: "/forgotPassword",
+        element: <ForgotPassword />,
       },
     ],
   },

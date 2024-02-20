@@ -21,8 +21,6 @@ func (App *Application) Routes() http.Handler {
 
 	mux.Get("/book/${id}", App.GetBook)
 
-	mux.Post("/fav", App.Favourites)
-
 	mux.Post("/login", App.Login)
 
 	mux.Post("/signup", App.Signup)

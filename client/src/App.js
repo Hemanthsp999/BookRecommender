@@ -1,6 +1,14 @@
 import { useState } from "react";
-import { Nav, Navbar } from "react-bootstrap";
-import { Link, Outlet } from "react-router-dom";
+import {
+  Col,
+  Button,
+  Container,
+  Nav,
+  Form,
+  Navbar,
+  Row,
+} from "react-bootstrap";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import Alert from "./components/Alert";
 import ReadSomeBook from "./components/images/BookMatch.png";
 
@@ -9,9 +17,19 @@ function App() {
   const [alertClassName, setAlertClassName] = useState("d-none");
   const [alertMessage, setAlertMessage] = useState("");
 
+  const location = useLocation();
+  const isHomePage =
+    location.pathname === "/" ||
+    location.pathname === "/books" ||
+    location.pathname === "/genre";
+
   const logOut = () => {
     setJwtToken(false);
     console.log("loged out");
+  };
+
+  const handleOnClick = () => {
+    console.log("entered");
   };
 
   return (
@@ -41,19 +59,52 @@ function App() {
             </span>
           </h1>
         </div>
-        <div className="col text-end mt-5">
-          <Link to="/signup">
-            {" "}
-            <span className="badge bg-success mx-1">Sign Up</span>
-          </Link>
-          {jwtToken === true ? (
-            <Link onClick={logOut}>
-              <span className="badge bg-danger">Logout</span>
-            </Link>
-          ) : (
-            <Link to="/login">
-              <span className="badge bg-success">Login</span>
-            </Link>
+        <div className="col-sm-12 col-md-8">
+          {isHomePage && (
+            <Container className="mt-3 mt-md-5">
+              <Row className="align-items-center">
+                <Col sm={12} md={8} lg={8} className="mb-3 mb-md-0">
+                  <Form
+                    className="d-flex mb-2 offset-md-6"
+                    style={{ width: "400px" }}
+                  >
+                    <Form.Control
+                      type="search"
+                      placeholder="search"
+                      className="me-2 rounded-pill form-control-sm"
+                      aria-label="search"
+                    />
+                    <Button
+                      className="rounded-pill"
+                      variant="outline-primary"
+                      onClick={handleOnClick}
+                    >
+                      Search
+                    </Button>
+                  </Form>
+                </Col>
+                {/*<div className="col text-end mt-5">*/}
+                <Col sm={4} md={4} lg={4} className="text-end mt-3 mt-md-0">
+                  {jwtToken === true ? (
+                    <span className="bg-primary"></span>
+                  ) : (
+                    <Link to="/signup">
+                      {" "}
+                      <span className="badge bg-success mx-1">Sign Up</span>
+                    </Link>
+                  )}
+                  {jwtToken === true ? (
+                    <Link onClick={logOut}>
+                      <span className="badge bg-danger">Logout</span>
+                    </Link>
+                  ) : (
+                    <Link to="/login">
+                      <span className="badge bg-success">Login</span>
+                    </Link>
+                  )}
+                </Col>
+              </Row>
+            </Container>
           )}
         </div>
         <hr className="mb-3"></hr>
@@ -65,12 +116,13 @@ function App() {
               variant="dark"
               sticky="top"
               expand="md"
+              style={{ padding: "3px" }}
               collapseOnSelect
             >
               <Navbar.Toggle />
               <Navbar.Collapse className="bg-white navbar-expand-lg">
                 <Nav>
-                  <div className="list-group">
+                  <div className="list-group" style={{ width: "100px" }}>
                     <Link
                       to="/"
                       className="list-group-item list-group-item-action"

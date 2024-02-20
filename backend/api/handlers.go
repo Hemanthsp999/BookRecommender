@@ -5,7 +5,7 @@ import (
 	"backend/internal/models"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -150,7 +150,7 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
 		// PARSE BODY ITSELF
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			panic(err)
 		}
@@ -185,7 +185,7 @@ func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					log.Fatal(err)
 				}
-				fmt.Printf("user already exists %s\n", decodeEmail)
+				fmt.Printf("user already exists %s\n", string(decodeEmail))
 				if err := json.NewEncoder(w).Encode(http.StatusNotFound); err != nil {
 					log.Fatal(err)
 					return
@@ -230,7 +230,7 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 
 		defer r.Body.Close()
 
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		sd := string(body)
 		jsonDatamap := make(map[string]interface{})
 		if err := json.Unmarshal([]byte(sd), &jsonDatamap); err != nil {
@@ -283,40 +283,5 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 
-	}
-}
-
-// ADD	TO FAVOURITES
-func (App *Application) Favourites(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		if err := r.ParseForm(); err != nil {
-			log.Panic(err)
-		}
-
-		PageBody, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-		StringPage := string(PageBody)
-		PageFav := make(map[string]interface{})
-
-		json.Unmarshal([]byte(StringPage), &PageFav)
-
-		fav := PageFav["AddFav"].(string)
-		var addFav *models.Book
-
-		addFav = &models.Book{
-			Title: fav,
-		}
-
-		getBase, err := database.Db.GetFavourites(addFav)
-		if err != nil {
-			log.Panic(err)
-		}
-		DBase, _ := json.Marshal(getBase)
-		fmt.Printf("Handler.go part %s \n ", string(DBase))
-
-	} else {
-		fmt.Println(http.StatusMethodNotAllowed)
 	}
 }

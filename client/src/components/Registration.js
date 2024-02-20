@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
@@ -16,58 +17,34 @@ const Registration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const jsonObj = {
-      fname: fname,
-      lname: lname,
-      email: email,
-      pass: pass,
-      rePass: rePass,
-    };
-
-    const JsonData = jsonObj;
-
-    console.log(JsonData);
-
-    var obj = JSON.stringify(JsonData);
-    console.log(obj);
-
     // connecting to the server
-    fetch("http://localhost:8080/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: obj,
-    })
-      .then(function (response) {
-        // THIS BLOCK ONLY RECIEVS RESPONSE FROM SERVER
-        return response.json();
-      })
-      .then(function (data) {
-        // THIS BLOCK PRINTS THE DATA RECIVED FROM SERVER
-        console.log("GETTING RESPONSE FROM SERVER SIDE", data);
-        try {
-          if (data === 404) {
-            setAlertClassName("alert-danger");
-            setAlertMessage("email already existed");
-            setJwtToken(null);
-            navigate("/login");
-          } else {
-            setAlertMessage("You can Register now !");
-            setAlertClassName("d-none");
-            setJwtToken("signup");
-          }
-        } catch {
-          console.error(Error);
-        }
-      })
-      .catch((e) => {
-        console.error(e);
+    try {
+      const fetchPost = await axios.post("http://localhost:8080/signup", {
+        fname: fname,
+        lname: lname,
+        email: email,
+        pass: pass,
+        rePass: rePass,
       });
-
-    console.log(typeof JsonData);
-    console.log(typeof obj);
+      const response = await fetchPost.data;
+      console.log(response);
+      if (response === 404) {
+        setAlertClassName("alert-danger");
+        setAlertMessage("email already existed");
+        setJwtToken(null);
+        setTimeout(() => {
+          setAlertClassName("d-none");
+          setAlertMessage("");
+        }, 2000);
+        navigate("/login");
+      } else {
+        setAlertMessage("You can Register now !");
+        setAlertClassName("d-none");
+        setJwtToken("signup");
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
@@ -136,7 +113,15 @@ const Registration = () => {
         </div>
         <br />
         <div className="form-floating">
-          <input className="form-control" id="floatingRePassword" type="password" placeholder="repass" value={rePass} onChange={(e) => setRepass(e.target.value)} required/>
+          <input
+            className="form-control"
+            id="floatingRePassword"
+            type="password"
+            placeholder="repass"
+            value={rePass}
+            onChange={(e) => setRepass(e.target.value)}
+            required
+          />
           <label htmlFor="floatingPassword">Re-Enter Password</label>
         </div>
         <br />

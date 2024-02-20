@@ -5,9 +5,13 @@ package main
 import (
 	"backend/api"
 	"backend/dataBase"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 const port = 8080
@@ -28,17 +32,24 @@ func main() {
 
 	router := http.NewServeMux()
 	router.Handle("/", App.EnableCORS(http.HandlerFunc(App.Home)))
+	router.Handle("/signup", App.EnableCORS(http.HandlerFunc(App.Signup)))
+	router.Handle("/login", App.EnableCORS(http.HandlerFunc(App.Login)))
 	router.Handle("/books", App.EnableCORS(http.HandlerFunc(App.AllBooks)))
 	router.Handle("/book", App.EnableCORS(http.HandlerFunc(App.GetBook)))
-	router.Handle("/login", App.EnableCORS(http.HandlerFunc(App.Login)))
-	router.Handle("/signup", App.EnableCORS(http.HandlerFunc(App.Signup)))
-	router.Handle("/fav", App.EnableCORS(http.HandlerFunc(App.Favourites)))
 
 	// Starting web server on port 8080
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: router,
 	}
+	go func() {
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
+		<-sigint
+		if err := server.Shutdown(context.Background()); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	if err := server.ListenAndServe(); err != nil {
 		fmt.Println("Error in server, Kill the server and restart")
