@@ -1,4 +1,6 @@
 import { useState } from "react";
+import axios from "axios";
+import { useAuth,AuthProvider } from "./components/authenticate/AuthContext";
 import {
   Col,
   Button,
@@ -13,9 +15,10 @@ import Alert from "./components/Alert";
 import ReadSomeBook from "./components/images/BookMatch.png";
 
 function App() {
-  const [jwtToken, setJwtToken] = useState(false);
   const [alertClassName, setAlertClassName] = useState("d-none");
   const [alertMessage, setAlertMessage] = useState("");
+  const [search, setSearch] = useState("");
+  const { currentUser, logout, loading } = useAuth();
 
   const location = useLocation();
   const isHomePage =
@@ -23,16 +26,24 @@ function App() {
     location.pathname === "/books" ||
     location.pathname === "/genre";
 
-  const logOut = () => {
-    setJwtToken(false);
-    console.log("loged out");
+
+  const HandleOnSubmit = async(e) => {
+    e.preventDefault();
+    const URL = 'http://localhost:8080/book';
+    try{
+      const fetchSearch = await axios.get(URL, {params: {search}})
+      console.log(fetchSearch.data);
+    }catch(e){
+      console.error(e)
+    }
   };
 
-  const handleOnClick = () => {
-    console.log("entered");
-  };
+  if(loading){
+    return <div>Loading....</div>;
+  }
 
   return (
+    <AuthProvider>
     <div className="container">
       <div className="row">
         <div className="col">
@@ -67,25 +78,27 @@ function App() {
                   <Form
                     className="d-flex mb-2 offset-md-6"
                     style={{ width: "400px" }}
+                    method = "POST"
+                    onSubmit = {HandleOnSubmit}
                   >
                     <Form.Control
                       type="search"
                       placeholder="search"
                       className="me-2 rounded-pill form-control-sm"
                       aria-label="search"
+                      value = {search}
+                      onChange = {(e) => setSearch(e.target.value)}
                     />
-                    <Button
-                      className="rounded-pill"
-                      variant="outline-primary"
-                      onClick={handleOnClick}
-                    >
-                      Search
-                    </Button>
+                    <input
+                      className="rounded-pill btn btn-success"
+                      type = "submit"
+                      value = "search"
+                    />
                   </Form>
                 </Col>
                 {/*<div className="col text-end mt-5">*/}
-                <Col sm={4} md={4} lg={4} className="text-end mt-3 mt-md-0">
-                  {jwtToken === true ? (
+                <Col sm={4} md={4} lg={4} className="text-end mt-3 mt-md-0 d-none d-lg-block">
+                  {currentUser ? (
                     <span className="bg-primary"></span>
                   ) : (
                     <Link to="/signup">
@@ -93,12 +106,12 @@ function App() {
                       <span className="badge bg-success mx-1">Sign Up</span>
                     </Link>
                   )}
-                  {jwtToken === true ? (
-                    <Link onClick={logOut}>
+                  { currentUser ? (
+                    <Link onClick={logout}>
                       <span className="badge bg-danger">Logout</span>
                     </Link>
                   ) : (
-                    <Link to="/login">
+                    <Link to="/login" >
                       <span className="badge bg-success">Login</span>
                     </Link>
                   )}
@@ -108,49 +121,67 @@ function App() {
           )}
         </div>
         <hr className="mb-3"></hr>
+
+        {/* Navbar section */}
         <div className="row">
           <div className="col-md-2">
             <Navbar
-              className="navbar navbar-dark bg-dark"
-              bg="dark"
-              variant="dark"
+              className="navbar navbar-expand-lg navbar-light bg-white"
+              variant="white"
               sticky="top"
               expand="md"
-              style={{ padding: "3px" }}
+              style={{ padding: "1px" }}
               collapseOnSelect
             >
               <Navbar.Toggle />
-              <Navbar.Collapse className="bg-white navbar-expand-lg">
+              <Navbar.Collapse className="navbar bg-white navbar-expand-lg ">
                 <Nav>
                   <div className="list-group" style={{ width: "100px" }}>
                     <Link
                       to="/"
-                      className="list-group-item list-group-item-action"
+                      className="list-group-item list-group-item-action text-center"
                     >
                       Home
                     </Link>
                     <Link
                       to="/books"
-                      className="list-group-item list-group-item-action"
+                      className="list-group-item list-group-item-action text-center"
                     >
                       Books
                     </Link>
-                    {jwtToken === true && (
+                    { currentUser && (
                       <>
                         <Link
                           to="/genre"
-                          className="list-group-item list-group-item-action"
+                          className="list-group-item list-group-item-action text-center"
                         >
                           Genre
                         </Link>
                         <Link
                           to="/Fav"
-                          className="list-group-item list-group-item-action"
+                          className="list-group-item list-group-item-action text-center"
                         >
                           Favourites
                         </Link>
                       </>
                     )}
+                    { currentUser ? (
+                      <span className="bg-primary"></span>
+                    ) : (
+                        <Link to="/signup" className="list-group-item list-group-item-action d-lg-none d-sm-block d-md-block">
+                          {" "}
+                          <span className="badge bg-success mx-1">Sign Up</span>
+                        </Link>
+                    )}
+                    { currentUser ? (
+                      <Link onClick={logout} className="list-group-item list-group-item-action d-lg-none d-sm-block d-md-block">
+                        <span className="badge bg-danger">Logout</span>
+                      </Link>
+                    ) : (
+                        <Link to="/login" className="list-group-item list-group-item-action text-center d-lg-none d-sm-block d-md-block">
+                          <span className="badge bg-success">Login</span>
+                        </Link>
+                      )}
                   </div>
                 </Nav>
               </Navbar.Collapse>
@@ -175,8 +206,6 @@ function App() {
             <Alert message={alertMessage} className={alertClassName} />
             <Outlet
               context={{
-                jwtToken,
-                setJwtToken,
                 setAlertMessage,
                 setAlertClassName,
               }}
@@ -185,6 +214,7 @@ function App() {
         </div>
       </div>
     </div>
+    </AuthProvider>
   );
 }
 

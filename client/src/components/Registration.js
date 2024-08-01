@@ -1,6 +1,8 @@
 import axios from "axios";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
+import { useAuth } from "./authenticate/AuthContext";
 
 const Registration = () => {
   const [fname, setFname] = useState("");
@@ -11,39 +13,39 @@ const Registration = () => {
 
   const { setAlertMessage } = useOutletContext();
   const { setAlertClassName } = useOutletContext();
-  const { setJwtToken } = useOutletContext();
+  const { currentUser } = useAuth();
 
   const navigate = useNavigate();
+  const URL = "http://localhost:8080/signup"
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     // connecting to the server
     try {
-      const fetchPost = await axios.post("http://localhost:8080/signup", {
-        fname: fname,
-        lname: lname,
-        email: email,
-        pass: pass,
-        rePass: rePass,
-      });
+      const fetchPost = await axios.post(URL, {fname,lname,email,pass,rePass})
       const response = await fetchPost.data;
-      console.log(response);
-      if (response === 404) {
+      console.log(fetchPost.status);
+      if (fetchPost.status <= 499 && fetchPost.status >= 400) {
         setAlertClassName("alert-danger");
-        setAlertMessage("email already existed");
-        setJwtToken(null);
+        setAlertMessage("Invalid Credentials");
         setTimeout(() => {
           setAlertClassName("d-none");
           setAlertMessage("");
         }, 2000);
-        navigate("/login");
       } else {
-        setAlertMessage("You can Register now !");
+        currentUser(response.token);
+        localStorage.setItem("token",response.token)
+        navigate("/login");
+        setAlertMessage("Registration Successfull");
         setAlertClassName("d-none");
-        setJwtToken("signup");
       }
     } catch (e) {
-      console.error(e);
+      setAlertClassName("alert-danger");
+      setAlertMessage("Error in registration");
+      setTimeout(() =>{
+        setAlertClassName("d-none");
+        setAlertMessage("");
+      }, 2000);
     }
   };
 
@@ -125,12 +127,20 @@ const Registration = () => {
           <label htmlFor="floatingPassword">Re-Enter Password</label>
         </div>
         <br />
+        <div className="row">
         <input
           type="submit"
           name="submit"
           className="btn btn-primary"
           value="Sign Up"
         />
+        </div>
+        <br/>
+        <div className="row-sm-4 text-center">
+          <Link to={'/login'} style={{textDecoration: "none"}}>
+            Already have an account? Login !
+          </Link>
+        </div>
       </form>
     </div>
   );

@@ -18,6 +18,7 @@ import Novel from "./components/Genres/Novel";
 import Suspense from "./components/Genres/Suspense";
 import AutoBiography from "./components/Genres/AutoBiography";
 import ForgotPassword from "./components/ForgotPassword";
+import {AuthProvider} from "./components/authenticate/AuthContext";
 
 const router = createBrowserRouter([
   {
@@ -89,6 +90,8 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
+    <AuthProvider>
     <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>,
 );

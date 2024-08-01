@@ -9,13 +9,17 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var SECRET_KEY = []byte("THIS IS NOT JUST A KEY BUT ITS ACTUALLY JUST A KEY")
+
+type Claims struct{
+	Email string `json:"email"`
+	jwt.RegisteredClaims
+}
 
 type Application struct {
 	Domain string
@@ -75,18 +79,13 @@ func (App *Application) GetBook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	} else {
-		urlId := r.URL.Query().Get("book_id")
-		fmt.Println(string(urlId))
+		urlId := r.URL.Query().Get("search")
+		fmt.Println(urlId)
 
 		defer r.Body.Close()
 
-		ObjectId, err := primitive.ObjectIDFromHex(urlId)
-		if err != nil {
-			http.Error(w, "Invalid object Id", http.StatusBadRequest)
-			return
-		}
 
-		getBook, err := database.Db.GetBookById(ObjectId)
+		getBook, err := database.Db.GetBookById(urlId)
 		if err != nil {
 			http.Error(w, "getting error in finding books", http.StatusNotFound)
 			panic(err)
@@ -108,180 +107,155 @@ func Hash(password string) (string, error) {
 // implemented JWT Token authentication for userLogin
 func generateJWT(email string) (string, error) {
 	expirationTime := time.Now().Add(30 * time.Minute)
-	claims := models.User{
+	claims := &Claims{
 		Email: email,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(SECRET_KEY)
-	if err == nil {
-		return tokenString, nil
+	if err != nil {
+		return "", err
 	}
 	return tokenString, nil
 }
 
-// verifyToken
-func VerifyToken(tokenString string) (email string, err error) {
-	claims := &models.User{}
-
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
+func validateJWT(tokenString string) (*Claims, error){
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error){
 		return SECRET_KEY, nil
 	})
-	if token != nil {
-		return claims.Email, nil
+	if err != nil{
+		return nil, err
 	}
-	return tokenString, err
+
+	if !token.Valid{
+		return nil, err
+	}
+	return claims, nil
 }
+
+// verifyToken
 
 // BELOW CODE IS FOR SIGNUP PART
 func (App *Application) Signup(w http.ResponseWriter, r *http.Request) {
-	// added http.methodPost instead POST
 	if r.Method != "POST" {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
-	} else {
-		if err := r.ParseForm(); err != nil {
-			panic(err)
-		}
-
-		defer r.Body.Close()
-
-		// PARSE BODY ITSELF
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			panic(err)
-		}
-		sb := string(body)
-		jsonDataMap := make(map[string]interface{})
-		if err := json.Unmarshal([]byte(sb), &jsonDataMap); err != nil {
-			http.Error(w, "Error in decoding to Go map", http.StatusExpectationFailed)
-		}
-
-		fname, _ := jsonDataMap["fname"].(string)
-		lname, _ := jsonDataMap["lname"].(string)
-		email, _ := jsonDataMap["email"].(string)
-		pass, _ := jsonDataMap["pass"].(string)
-		repass, _ := jsonDataMap["rePass"].(string)
-
-		var person models.User
-		if pass == repass {
-			hashPass, _ := Hash(pass)
-			fmt.Printf("\n\n\n sent password is %s \n", pass)
-			person = models.User{
-				Id:        primitive.NewObjectID(),
-				FirstName: fname,
-				LastName:  lname,
-				Email:     email,
-				Password:  hashPass,
-				CreatedAt: time.Now(),
-			}
-
-			checkEmail, _ := database.Db.GetUserByEmail(person.Email)
-			if checkEmail.Email == person.Email {
-				decodeEmail, err := json.Marshal(checkEmail.Email)
-				if err != nil {
-					log.Fatal(err)
-				}
-				fmt.Printf("user already exists %s\n", string(decodeEmail))
-				if err := json.NewEncoder(w).Encode(http.StatusNotFound); err != nil {
-					log.Fatal(err)
-					return
-				}
-				return
-			} else {
-				fmt.Println(w, "you can now register here ", http.StatusOK)
-				_, err := database.Db.AddUser(&person)
-				if err != nil {
-					panic(err)
-				}
-				DecodeData, _ := json.Marshal(person)
-				fmt.Printf("\n\nRegistered Data is : %s\n\n", DecodeData)
-				if err := json.NewEncoder(w).Encode(http.StatusAccepted); err != nil {
-					log.Fatal("Error in sending response to client", err)
-					return
-				}
-
-			}
-
-		} else {
-			fmt.Println("password is not matching")
-			return
-		}
-
 	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "unable to parse form", http.StatusBadRequest)
+		return
+	}
+
+	defer r.Body.Close()
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "unable to read body", http.StatusInternalServerError)
+		return
+	}
+
+	var jsonDataMap map[string]interface{}
+	if err := json.Unmarshal(body, &jsonDataMap); err != nil {
+		http.Error(w, "error in decoding JSON", http.StatusExpectationFailed)
+		return
+	}
+
+	fname, _ := jsonDataMap["fname"].(string)
+	lname, _ := jsonDataMap["lname"].(string)
+	email, _ := jsonDataMap["email"].(string)
+	pass, _ := jsonDataMap["pass"].(string)
+	repass, _ := jsonDataMap["rePass"].(string)
+
+	if pass != repass {
+		http.Error(w, "passwords do not match", http.StatusBadRequest)
+		return
+	}
+
+	hashPass, _ := Hash(pass)
+	person := models.User{
+		Id:        primitive.NewObjectID(),
+		FirstName: fname,
+		LastName:  lname,
+		Email:     email,
+		Password:  hashPass,
+		CreatedAt: time.Now(),
+	}
+
+	checkEmail, _ := database.Db.GetUserByEmail(person.Email)
+	if checkEmail.Email == person.Email {
+		http.Error(w, "user already exists", http.StatusConflict)
+		return
+	}
+
+	_, err = database.Db.AddUser(&person)
+	if err != nil {
+		http.Error(w, "unable to register user", http.StatusInternalServerError)
+		return
+	}
+
+	token, err := generateJWT(email)
+	if err != nil {
+		http.Error(w, "unable to generate token", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
 
 // BELOW CODE HANDLES THE LOGIN DETAILS
 func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
-		http.Error(w, "method not found", http.StatusMethodNotAllowed)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
-
-	} else {
-
-		if err := r.ParseForm(); err != nil {
-			panic(err)
-		}
-
-		defer r.Body.Close()
-
-		body, err := io.ReadAll(r.Body)
-		sd := string(body)
-		jsonDatamap := make(map[string]interface{})
-		if err := json.Unmarshal([]byte(sd), &jsonDatamap); err != nil {
-			log.Fatal(err)
-		}
-
-		email, _ := jsonDatamap["email"].(string)
-		password, _ := jsonDatamap["password"].(string)
-
-		// login credentials
-		db_user, db_err := database.Db.GetUserByEmail(email)
-		if db_err != nil {
-			// SEND MESSAGE TO CLIENT - user doesn't exist
-			fmt.Printf("\nError: %v\n", &db_err)
-			fmt.Println(db_err)
-			if err := json.NewEncoder(w).Encode(http.StatusNotFound); err != nil {
-				http.Error(w, "Error in sending response to client", http.StatusNotAcceptable)
-			}
-		} else {
-
-			fmt.Printf("\n\n DB info: %v\n\n", &db_user)
-			password_err := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
-
-			if password_err != nil {
-				http.Error(w, "Password not found", http.StatusNotFound)
-			} else {
-
-				fmt.Printf("\n\n valid password...? : %v \n\n", password_err == nil)
-				if err := json.NewEncoder(w).Encode(http.StatusFound); err != nil {
-					http.Error(w, "\nPassword not found\n", http.StatusNotFound)
-				}
-
-				user := models.User{
-					UpdatedAt: time.Now(),
-				}
-				fmt.Println(user)
-				var Token models.User
-				// JWT Token for auth
-				Token.Token, err = generateJWT(email)
-				if err != nil {
-					log.Panic(err)
-				}
-				fmt.Printf("login jwt %s \n", Token.Token)
-				return
-
-			}
-		}
-
-		if err != nil {
-			panic(err)
-		}
-
 	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "unable to parse form", http.StatusBadRequest)
+		return
+	}
+
+	defer r.Body.Close()
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "unable to read body", http.StatusInternalServerError)
+		return
+	}
+
+	var jsonDatamap map[string]interface{}
+	if err := json.Unmarshal(body, &jsonDatamap); err != nil {
+		http.Error(w, "error in decoding JSON", http.StatusBadRequest)
+		return
+	}
+
+	email, _ := jsonDatamap["email"].(string)
+	password, _ := jsonDatamap["password"].(string)
+
+	db_user, db_err := database.Db.GetUserByEmail(email)
+	if db_err != nil {
+		http.Error(w, "user doesn't exist", http.StatusNotFound)
+		return
+	}
+
+	password_err := bcrypt.CompareHashAndPassword([]byte(db_user.Password), []byte(password))
+	if password_err != nil {
+		http.Error(w, "invalid password", http.StatusUnauthorized)
+		return
+	}
+
+	token, err := generateJWT(email)
+	if err != nil {
+		http.Error(w, "unable to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
+

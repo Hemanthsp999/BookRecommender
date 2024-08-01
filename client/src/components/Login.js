@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate, useOutletContext } from "react-router-dom";
+import { useAuth } from "./authenticate/AuthContext";
 
 const Login = () => {
   /*         Server link                  */
@@ -9,7 +10,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { setJwtToken } = useOutletContext();
+  const { login } = useAuth();
   const { setAlertClassName } = useOutletContext();
   const { setAlertMessage } = useOutletContext();
 
@@ -19,12 +20,9 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const fetchPost = await axios.post(URL, {
-        email: email,
-        password: password,
-      });
-      const response = await fetchPost.data;
-      if (response >= 400 && response <= 500) {
+      const fetchCredentials = await axios.post(URL, {email, password});
+      const response = await fetchCredentials.data;
+      if (fetchCredentials.status >= 400 && fetchCredentials.status <= 499) {
         setAlertClassName("alert-danger");
         setAlertMessage("Invalid Credentails");
         setTimeout(() => {
@@ -32,13 +30,19 @@ const Login = () => {
           setAlertMessage("");
         }, 2000);
       } else {
+        login(response.token);
+        localStorage.setItem("token", response.token)
         navigate("/");
-        setJwtToken(true);
-        setAlertMessage("User is checked");
+        setAlertMessage("User is Authenticated");
         setAlertClassName("d-none");
       }
     } catch (e) {
-      console.error(e);
+      setAlertClassName("alert-danger");
+      setAlertMessage("Error in authentication")
+      setTimeout(() =>{
+        setAlertClassName("d-none");
+        setAlertMessage("");
+      }, 2000)
     }
 
     // SET STATE TO NULL AFTER SUBMITTING THE FORM
@@ -80,11 +84,13 @@ const Login = () => {
         </div>
         <hr />
 
+        <div className="row">
         <input type="submit" className="btn btn-primary" value="Login" />
-        <div className="col text-end" style={{ marginTop: "-35px" }}>
+        </div>
+        <div className="row-sm-4 text-center">
           <Link
             to={"/forgotPassword"}
-            style={{ textDecoration: "none", position: "relative" }}
+            style={{ textDecoration: "none"}}
             className="btn btn-link"
           >
             Forgot Password?

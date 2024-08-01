@@ -12,10 +12,11 @@ const Book = () => {
   useEffect(() => {
     const getServer = async () => {
       try {
+        const URL = "http://localhost:8080/book";
         let book_id = id
-        const response = await axios.get(`http://localhost:8080/book`,{params: {book_id}});
-        console.log(response.data)
-        setInBook(response.data)
+        const fetchBook = await axios.get(URL,{params: {book_id}});
+        const response = await fetchBook.data
+        console.log(response)
       } catch(error){
         console.error(error)
       }

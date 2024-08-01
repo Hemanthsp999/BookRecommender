@@ -9,7 +9,6 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
@@ -96,7 +95,7 @@ func (Db *DataBase) GetUserByEmail(email string) (models.User, error) {
 		err = errors.New("User doesn't exists")
 
 	}
-	return user, err
+	return user, nil
 }
 
 // BELOW CODE IS FOR GETTING ALL BOOKS FORM THE DATABASE
@@ -139,12 +138,12 @@ func (Db *DataBase) GetFavourites(Id *models.Book) (*mongo.Collection, error) {
 	return &mongo.Collection{}, nil
 }
 
-func (Db *DataBase) GetBookById(bookId primitive.ObjectID) (models.Book, error) {
+func (Db *DataBase) GetBookById(bookName string) (models.Book, error) {
 
 	// Get Book by Genre Type
 	var book models.Book
 	var err error
-	FindAction := Db.BooksCollection.FindOne(context.TODO(), bson.M{"_id": bookId}).Decode(&book)
+	FindAction := Db.BooksCollection.FindOne(context.TODO(), bson.M{"Title": bookName}).Decode(&book)
 	DecodeJson, err := json.Marshal(book)
 	if err != nil {
 		log.Panic("error ", err)
@@ -157,5 +156,5 @@ func (Db *DataBase) GetBookById(bookId primitive.ObjectID) (models.Book, error) 
 		fmt.Println("Book is not there")
 		err = errors.New("book is not there")
 	}
-	return book, err
+	return book, nil
 }
