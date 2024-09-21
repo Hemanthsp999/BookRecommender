@@ -31,7 +31,9 @@ const Login = () => {
         }, 2000);
       } else {
         login(response.token);
+        login(response.username);
         localStorage.setItem("token", response.token)
+        localStorage.setItem("username", response.username)
         navigate("/");
         setAlertMessage("User is Authenticated");
         setAlertClassName("d-none");

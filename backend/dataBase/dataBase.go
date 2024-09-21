@@ -49,7 +49,7 @@ func (Db *DataBase) Initialization() (*mongo.Client, error) {
 	Db.userCollection = Db.client.Database("BookMatch").Collection("userData")
 
 	// BELOW BLOCK IS USED FOR BOOKS COLLECTION
-	Db.BooksCollection = Db.client.Database("BookMatch").Collection("Books")
+	Db.BooksCollection = Db.client.Database("BookMatch").Collection("BookCollection")
 
 	// THIS IS USED FOR FAVOURITES COLLECTION IN DATABASE
 	Db.FavCollection = Db.client.Database("BookMatch").Collection("FavCollection")
@@ -143,18 +143,16 @@ func (Db *DataBase) GetBookById(bookName string) (models.Book, error) {
 	// Get Book by Genre Type
 	var book models.Book
 	var err error
-	FindAction := Db.BooksCollection.FindOne(context.TODO(), bson.M{"Title": bookName}).Decode(&book)
+	FindAction := Db.BooksCollection.FindOne(context.TODO(), bson.M{"title": bookName}).Decode(&book)
 	DecodeJson, err := json.Marshal(book)
 	if err != nil {
 		log.Panic("error ", err)
 	}
 
-	if FindAction == nil {
-		fmt.Printf("The books is there %s\n", DecodeJson)
-
-	} else {
+	if FindAction != nil {
 		fmt.Println("Book is not there")
 		err = errors.New("book is not there")
 	}
+	fmt.Printf("The books is there %s\n", DecodeJson)
 	return book, nil
 }

@@ -1,40 +1,72 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const Book = () => {
   /* individual Books shelf  */
 
-  const [inBook, setInBook] = useState({});
-
-  let { id } = useParams();
-
-  useEffect(() => {
-    const getServer = async () => {
-      try {
-        const URL = "http://localhost:8080/book";
-        let book_id = id
-        const fetchBook = await axios.get(URL,{params: {book_id}});
-        const response = await fetchBook.data
-        console.log(response)
-      } catch(error){
-        console.error(error)
-      }
-    }
-
-    getServer()
-  }, [id])
+  // Decode the title from Books.js
+  const location = useLocation();
+  const { title, pdfLink, author, stars } = location.state || {};
 
   return (
-    <div>
-      <h3>Book: {inBook.title}</h3>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        fontFamily: "monospace",
+      }}
+    >
+      <h4>
+        Book Title: <b>{title}</b>
+      </h4>
       <small>
         <em>
-          Id: {id}, Author:<b>{inBook.author}</b>, ReleaseDate:{" "}
-          {inBook.releaseDate}
+          Author: <b>{author}</b>, Ratings: <b>{stars}</b>
         </em>
       </small>
       <hr />
+
+      {pdfLink ? (
+        <div style={{ width: "100%", maxWidth: "500px", margin: "0 auto" }}>
+          <a href={pdfLink} target="_blank" rel="noopener noreferrer">
+            <button
+              className="btn btn-primary"
+              style={{ marginBottom: "20px" }}
+            >
+              Open PDF
+            </button>
+          </a>
+          {/* PDF Viewer */}
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              paddingBottom: "100%",
+              height: "0",
+              overflow: "hidden",
+              background: "#f1f1f1",
+            }}
+          >
+            <iframe
+              src={pdfLink}
+              title="PDF viewer"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                border: "none",
+              }}
+            >
+              This browser does not support PDFs. Please download the PDF to
+              view it.
+            </iframe>
+          </div>
+        </div>
+      ) : (
+        <p>No PDF available for this book.</p>
+      )}
     </div>
   );
 };

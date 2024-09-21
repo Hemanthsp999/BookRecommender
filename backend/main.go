@@ -32,12 +32,13 @@ func main() {
 	fmt.Println(App.Domain)
 	log.Println("starting server at port", port)
 
-	router := chi.NewMux()
-	router.Handle("/", App.EnableCORS(http.HandlerFunc(App.Home)))
-	router.Handle("/signup", App.EnableCORS(http.HandlerFunc(App.Signup)))
-	router.Handle("/login", App.EnableCORS(http.HandlerFunc(App.Login)))
-	router.Handle("/books", App.EnableCORS(http.HandlerFunc(App.AllBooks)))
-	router.Handle("/book", App.EnableCORS(http.HandlerFunc(App.GetBook)))
+	router := chi.NewRouter()
+	router.Use(App.EnableCORS)
+	router.Handle("/", http.HandlerFunc(App.Home))
+	router.Handle("/signup", http.HandlerFunc(App.Signup))
+	router.Handle("/login", http.HandlerFunc(App.Login))
+	router.Handle("/books", http.HandlerFunc(App.AllBooks))
+	router.Handle("/book", App.AuthMiddleWare(http.HandlerFunc(App.GetBook)))
 
 	// Starting web server on port 8080
 	server := http.Server{

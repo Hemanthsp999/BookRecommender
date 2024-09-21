@@ -18,7 +18,8 @@ import Novel from "./components/Genres/Novel";
 import Suspense from "./components/Genres/Suspense";
 import AutoBiography from "./components/Genres/AutoBiography";
 import ForgotPassword from "./components/ForgotPassword";
-import {AuthProvider} from "./components/authenticate/AuthContext";
+import { AuthProvider } from "./components/authenticate/AuthContext";
+import ProtectedRoute from "./components/authenticate/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -36,12 +37,13 @@ const router = createBrowserRouter([
         element: <Books />,
       },
       {
-        path: "/book/:id",
+        path: "/books/:id",
         element: <Book />,
       },
       {
         path: "/fav",
-        element: <Fav />,
+        element: <ProtectedRoute />,
+        children: [{ path: "", element: <Fav /> }],
       },
       {
         path: "/login",
@@ -91,7 +93,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <AuthProvider>
-    <RouterProvider router={router} />
+      <RouterProvider router={router} />
     </AuthProvider>
   </React.StrictMode>,
 );

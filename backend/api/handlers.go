@@ -5,18 +5,18 @@ import (
 	"backend/internal/models"
 	"encoding/json"
 	"fmt"
+	"github.com/golang-jwt/jwt/v4"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 	"log"
 	"net/http"
 	"time"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"github.com/golang-jwt/jwt/v4"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var SECRET_KEY = []byte("THIS IS NOT JUST A KEY BUT ITS ACTUALLY JUST A KEY")
 
-type Claims struct{
+type Claims struct {
 	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
@@ -75,28 +75,28 @@ func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (App *Application) GetBook(w http.ResponseWriter, r *http.Request) {
+	println("Now you are in GetBook func")
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
-	} else {
-		urlId := r.URL.Query().Get("search")
-		fmt.Println(urlId)
-
-		defer r.Body.Close()
-
-
-		getBook, err := database.Db.GetBookById(urlId)
-		if err != nil {
-			http.Error(w, "getting error in finding books", http.StatusNotFound)
-			panic(err)
-		}
-
-		if err := json.NewEncoder(w).Encode(&getBook); err != nil {
-			http.Error(w, "data not found", http.StatusInternalServerError)
-		}
-
 	}
-	w.Header().Set("Content-Type", "application/json")
+
+	title := r.URL.Query().Get("search")
+	fmt.Println("book name: ", title)
+
+	defer r.Body.Close()
+
+	getBook, err := database.Db.GetBookById(title)
+	if err != nil {
+		http.Error(w, "Book not found.", http.StatusNotFound)
+		panic(err)
+	}
+
+	if err := json.NewEncoder(w).Encode(&getBook); err != nil {
+		http.Error(w, "data not found", http.StatusInternalServerError)
+	}
+
+	json.NewEncoder(w).Encode(getBook)
 }
 
 func Hash(password string) (string, error) {
@@ -122,16 +122,16 @@ func generateJWT(email string) (string, error) {
 	return tokenString, nil
 }
 
-func validateJWT(tokenString string) (*Claims, error){
+func validateJWT(tokenString string) (*Claims, error) {
 	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error){
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return SECRET_KEY, nil
 	})
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
-	if !token.Valid{
+	if !token.Valid {
 		return nil, err
 	}
 	return claims, nil
@@ -256,6 +256,5 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
+	json.NewEncoder(w).Encode(map[string]string{"token": token, "username": db_user.FirstName})
 }
-
