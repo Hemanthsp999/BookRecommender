@@ -57,11 +57,6 @@ func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 
-		var books models.Book
-		defer r.Body.Close()
-
-		json.NewDecoder(r.Body).Decode(&books)
-
 		DataBook, err := database.Db.GetAllBooks()
 		if err != nil {
 			log.Panic(err)
@@ -96,7 +91,6 @@ func (App *Application) GetBook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "data not found", http.StatusInternalServerError)
 	}
 
-	json.NewEncoder(w).Encode(getBook)
 }
 
 func Hash(password string) (string, error) {

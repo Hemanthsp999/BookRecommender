@@ -1,113 +1,84 @@
-import Dopamine from "./images/BooksImg/DopamineDetox.jpg";
-import AtomicHabit from "./images/BooksImg/atomicHabits.jpg";
-import HungerGames from "./images/BooksImg/TheHungerGames.jpg";
-import WorldWar from "./images/BooksImg/WorldWarZ.jpg";
-import DieHard from "./images/BooksImg/DieHard.jpg";
-import PlayerOne from "./images/BooksImg/TheReadyPlayerOne.jpg";
-import TheMonk from "./images/BooksImg/TheMonk.jpg";
-import NotGivingAFuck from "./images/BooksImg/NotGivingAFuck.jpg";
-import Alone from "./images/BooksImg/TheArtOfBeingAlone.jpg";
-import AttitudeIsEveryThing from "./images/BooksImg/AttitudeIsEveryThing.jpg";
 import { ScrollingCarousel } from "@trendyol-js/react-carousel";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { useContext, useState } from "react";
-import { useAuth } from "./authenticate/AuthContext";
+import { useEffect, useState } from "react";
+import { useAuth } from "./authenticate/AuthContext"; // Assuming useAuth for favorites logic
 
 const Books = () => {
-  const { currentUser } = useAuth();
-  const [books, setBooks] = useState([
-    {
-      title: "Atomic Habits",
-      ImgSource: AtomicHabit,
-    },
-    {
-      title: "Die Hard",
-      ImgSource: DieHard,
-    },
-    {
-      title: "Hunger Games",
-      ImgSource: HungerGames,
-    },
-    {
-      title: "The World War Z",
-      ImgSource: WorldWar,
-    },
-    {
-      title: "Ready Player One",
-      ImgSource: PlayerOne,
-    },
-    {
-      title: "Die Hard",
-      ImgSource: Dopamine,
-    },
-    {
-      title: "Attitude is Everythign",
-      ImgSource: AttitudeIsEveryThing,
-    },
-    {
-      title: "Alone",
-      ImgSource: Alone,
-    },
-    {
-      title: "The Monk",
-      ImgSource: TheMonk,
-    },
-    {
-      title: "Not Giving A Fuck",
-      ImgSource: NotGivingAFuck,
-    },
-  ]);
+  const [books, setBooks] = useState([]);
+  const { addToFavorites, removeFromFavorites, favorites } = useAuth();
 
-  const HandleOnClick = async (title) => {
-    const URL = "http://localhost:8080/book";
+  useEffect(() => {
+    const fetchBooks = async () => {
+      const url = "http://localhost:8080/books";
+      try {
+        const response = await axios.get(url);
+        setBooks(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-    try {
-      const getData = await axios.get(URL, {
-        params: { title },
-        headers: { Authorization: `Bearer ${currentUser.token}` },
-      });
-      const response = await getData.data;
-      console.log(response);
-    } catch (e) {
-      console.error(e);
+    fetchBooks();
+  }, []);
+
+  const toggleFavorite = (book) => {
+    const newFavorite = {
+      id: book.Book_id,
+      title: book.Title,
+      imageUrl: book.ImgSource, // Store image and title for favorites
+    };
+
+    if (favorites.some((fav) => fav.id === book.Book_id)) {
+      removeFromFavorites(book.Book_id); // Remove if already a favorite
+    } else {
+      addToFavorites(newFavorite); // Add if not a favorite
     }
   };
 
   return (
     <div className="container">
-      <div className="row">
-        <div className="col">
-          <h3 className="mx-1 fs-5" style={{ fontFamily: "sans-serif" }}>
-            <b>Most Popular Books</b>
-          </h3>
-          <ScrollingCarousel className="m-1">
-            {books.map((book) => (
-              <div key={book.id}>
-                {/*{console.log(book.id)} */}
-                <Link
-                  className="text-decoration-none"
-                  to={`/books/${book.id}`}
-                  state={{
-                    title: book.title,
-                    pdfLink: book.pdfLink,
-                    author: book.author,
-                    stars: book.stars,
-                  }}
-                >
-                  <img
-                    src={book.ImgSource}
-                    className="img-fluid rounded mx-2 img-hover img-center"
-                    style={{ height: "200px", width: "150px" }}
-                    onClick={HandleOnClick(book.title)}
-                    alt={book.title || "....."}
-                  />
-                </Link>
-              </div>
-            ))}
-          </ScrollingCarousel>
-        </div>
-      </div>
+      <h3>Most Popular Books</h3>
+      <ScrollingCarousel>
+        {books.map((book) => (
+          <div
+            key={book.Book_id}
+            style={{ position: "relative" }}
+            className="card mx-1"
+          >
+            <Link
+              to={`/books/${book.Book_id}`}
+              state={{
+                title: book.Title,
+                pdfLink: book.Pdf_Path,
+                author: book.Author,
+                stars: book.Rating,
+                genre: book.Genre,
+              }}
+            >
+              <img
+                // className="img-fluid rounded mx-2 img-hover img-center"
+                className="card-img-top mx-3"
+                src={book.ImgSource}
+                alt={book.title}
+                style={{ height: "200px", width: "150px", objectFit: "cover", borderRadius: "10px" }}
+              />
+            </Link>
+            <div className="card-body text-center text-wrap text-break">
+              <h5 className="card-title" style={{maxWidth: "150px"}}>{book.Title}</h5>
+            </div>
+            <span
+              className="position-absolute top-0 end-0 m-2 p-1 bg-light rounded-circle"
+              onClick={() => toggleFavorite(book)}
+              style={{ cursor: "pointer" }}
+            >
+              <i
+                className={`fas fa-heart ${favorites.some((fav) => fav.id === book.Book_id) ? "text-danger" : "text-muted"}`}
+              ></i>
+            </span>
+          </div>
+        ))}
+      </ScrollingCarousel>
     </div>
   );
 };

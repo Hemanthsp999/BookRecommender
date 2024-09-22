@@ -5,7 +5,7 @@ const Book = () => {
 
   // Decode the title from Books.js
   const location = useLocation();
-  const { title, pdfLink, author, stars } = location.state || {};
+  const { title, pdfLink, author, stars, genre } = location.state || {};
 
   return (
     <div
@@ -17,11 +17,11 @@ const Book = () => {
       }}
     >
       <h4>
-        Book Title: <b>{title}</b>
+        <b><i>{title}</i></b>
       </h4>
       <small>
         <em>
-          Author: <b>{author}</b>, Ratings: <b>{stars}</b>
+          Genre:<b>{genre}</b>, Author: <b>{author}</b>, Ratings: <b>{stars}</b>
         </em>
       </small>
       <hr />

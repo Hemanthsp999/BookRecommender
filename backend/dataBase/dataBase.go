@@ -99,27 +99,32 @@ func (Db *DataBase) GetUserByEmail(email string) (models.User, error) {
 }
 
 // BELOW CODE IS FOR GETTING ALL BOOKS FORM THE DATABASE
-func (Db *DataBase) GetAllBooks() (*models.Book, error) {
+func (Db *DataBase) GetAllBooks() ([]models.Book, error) {
 
-	var book models.Book
+	var books []models.Book
 
 	allbooks, err := Db.BooksCollection.Find(context.TODO(), bson.D{})
 	if err != nil {
 		log.Panic(err)
 	}
 
+	defer allbooks.Close(context.TODO())
+
 	for i := 0; allbooks.Next(context.TODO()); i++ {
+		var book models.Book
 		if err := allbooks.Decode(&book); err != nil {
 			log.Panic(err)
+			return nil, err
 		}
-		BookData, err := json.Marshal(book)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println("The Data of the Books are: ", i, string(BookData))
+		books = append(books, book)
 	}
 
-	return &book, err
+	if err := allbooks.Err(); err != nil {
+		log.Panic(err)
+		return nil, err
+	}
+
+	return books, err
 }
 
 func (Db *DataBase) GetFavourites(Id *models.Book) (*mongo.Collection, error) {

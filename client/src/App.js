@@ -2,15 +2,18 @@ import { useState } from "react";
 import axios from "axios";
 import { useAuth, AuthProvider } from "./components/authenticate/AuthContext";
 import { Col, Container, Nav, Form, Navbar, Row } from "react-bootstrap";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import Alert from "./components/Alert";
 import ReadSomeBook from "./components/images/BookMatch.png";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function App() {
   const [alertClassName, setAlertClassName] = useState("d-none");
   const [alertMessage, setAlertMessage] = useState("");
   const [search, setSearch] = useState("");
   const { currentUser, logout } = useAuth();
+
+  const navigate = useNavigate();
 
   const location = useLocation();
   const isHomePage =
@@ -27,14 +30,25 @@ function App() {
       setAlertClassName("alert-danger");
       return;
     }
+    console.log(currentUser);
     try {
       const fetchSearch = await axios.get(URL, {
         params: { search },
         headers: { Authorization: `Bearer ${currentUser.token}` },
       });
       console.log(fetchSearch.data);
+      const fetchData = await fetchSearch.data;
+
+      navigate(`/books/${fetchData.Book_id}`, {
+        state: {
+          title: fetchData.Title,
+          pdfLink: fetchData.Pdf_Path,
+          author: fetchData.Author,
+          stars: fetchData.Rating,
+        },
+      });
     } catch (e) {
-      console.error(e);
+      console.error("You are getting error ", e);
     }
     setSearch("");
   };
@@ -48,23 +62,11 @@ function App() {
               <Link to="/">
                 <img
                   className="img-fluid rounded"
-                  style={{ width: "100px", display: "flex" }}
+                  style={{ width: "100px", height: "100px", display: "flex" }}
                   src={ReadSomeBook}
                   alt="ReadSomeBook.jpg"
                 />
               </Link>
-              <span
-                className="mx-2 mt-4"
-                style={{
-                  fontFamily: "serif",
-                  fontWeight: "bold",
-                  fontSize: "70%",
-                  flexWrap: "nowrap",
-                  position: "relative",
-                }}
-              >
-                BookMatch
-              </span>
             </h1>
           </div>
           <div className="col-sm-12 col-md-8">
@@ -166,12 +168,6 @@ function App() {
                       </Link>
                       {currentUser && (
                         <>
-                          <Link
-                            to="/genre"
-                            className="list-group-item list-group-item-action text-center"
-                          >
-                            Genre
-                          </Link>
                           <Link
                             to="/Fav"
                             className="list-group-item list-group-item-action text-center px-2"
