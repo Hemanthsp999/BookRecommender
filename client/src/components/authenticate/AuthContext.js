@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
   const removeFromFavorites = (bookId) => {
     console.log(`Attempting to remove book with ID: ${bookId}`);
 
-    const updatedFavorites = favorites.filter((fav) => fav.book_id !== bookId);
+    const updatedFavorites = favorites.filter((fav) => fav.Book_id !== bookId);
 
     // Update state and localStorage
     setFavorites(updatedFavorites);

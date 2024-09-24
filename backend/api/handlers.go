@@ -95,7 +95,7 @@ func (App *Application) Favorite(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if action == "remove" {
 		// if action is "remove" then the Book will be removed from Database
-		err = database.Db.RemoveFavorite(bookId, email)
+		err = database.Db.Remove_From_Fravoites(bookId, email)
 		if err != nil {
 			http.Error(w, "Unable to remove favorite", http.StatusInternalServerError)
 			return
@@ -103,6 +103,22 @@ func (App *Application) Favorite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (App *Application) GetFavorite(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "only Get method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	email := r.URL.Query().Get("email")
+
+	FavoriteData, err := database.Db.GetFavorites(email)
+	if err != nil {
+		log.Panic(err)
+	}
+	fmt.Println("\nThis Data is retrieved from Favroite\t", FavoriteData)
+	json.NewEncoder(w).Encode(FavoriteData)
 }
 
 func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {

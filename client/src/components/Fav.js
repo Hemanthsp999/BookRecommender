@@ -1,13 +1,36 @@
 import { useAuth } from "./authenticate/AuthContext";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const Favorites = () => {
   const { favorites, removeFromFavorites, currentUser } = useAuth();
+  const [fav, setFav] = useState([]);
+
+  useEffect(() => {
+    console.log(currentUser.email);
+    const fetchFavorites = async () => {
+      const url = "http://localhost:8080/user/favorite";
+      try {
+        const response = await axios.get(url, {
+          params: currentUser.email,
+          headers: { Authorization: `Bearer ${currentUser.token}` },
+        });
+        const favoriteData = Array.isArray(response.data) ? response.data : [];
+        console.log("Response", response.data);
+        setFav(favoriteData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchFavorites();
+  }, [currentUser]);
 
   if (favorites.length === 0) {
     return <p>No favorite books yet.</p>;
   }
+
   const toggleFavorite = async (book) => {
     if (!currentUser) {
       console.error("User is not logged in");
@@ -17,17 +40,24 @@ const Favorites = () => {
     const action = "remove";
 
     try {
-      await axios.post("http://localhost:8080/fav", {
-        email: currentUser.email,
-        book_id: book.book_id,
-        action: action,
-        title: book.Title,
-        imgSource: book.ImgSource,
-      });
+      await axios.post(
+        "http://localhost:8080/favorite",
+        {
+          email: currentUser.email,
+          book_id: book.Book_id,
+          action: action,
+          title: book.Title,
+          imgSource: book.ImgSource,
+        },
+        {
+          headers: { Authorization: `Bearer ${currentUser.token}` },
+        },
+      );
 
       if (action === "remove") {
-        console.log(`Removing book with ID: ${book.book_id}`);
-        removeFromFavorites(book.book_id);
+        console.log(`Removing book with ID: ${book.Book_id}`);
+        removeFromFavorites(book.Book_id);
+        setFav((preFav) => preFav.filter((b) => b.Book_id !== book.Book_id));
       }
     } catch (error) {
       console.error("Failed to update favorites", error);
@@ -35,31 +65,35 @@ const Favorites = () => {
   };
 
   return (
-    <div>
-      <h2>Your Favorite Books</h2>
+    <div style={{fontFamily: "monospace"}}>
+      {fav.length === 0 ? (
+        <h4>There's no book in Favorites</h4>
+      ) : (
+        <h4>Your Favorite Books</h4>
+      )}
       <div className="row">
-        {favorites.map((book) => {
+        {fav.map((book) => {
           // Log each book to ensure book_id exists
-          console.log(book);
+          console.log("this is in func", book);
 
           return (
-            <div key={book.book_id} className="col-md-3 mb-4">
+            <div key={book.Book_id} className="col-md-3 mb-4">
               <div className="card">
                 {/* Book Image */}
                 <Link
-                  to={`/books/${book.book_id}`}
+                  to={`/books/${book.Book_id}`}
                   className="text-decoration-none"
                 >
                   <img
-                    src={book.imgSource}
-                    alt={book.title}
+                    src={book.ImgSource}
+                    alt={book.Title}
                     className="card-img-top"
                     style={{ height: "200px", objectFit: "cover" }}
                   />
                 </Link>
                 <div className="card-body text-center">
                   {/* Book Title */}
-                  <h5 className="card-title">{book.title}</h5>
+                  <h5 className="card-title">{book.Title}</h5>
 
                   {/* Toggle Favorite Button */}
                   <button

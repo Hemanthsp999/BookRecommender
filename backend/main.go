@@ -37,9 +37,10 @@ func main() {
 	router.Handle("/", http.HandlerFunc(App.Home))
 	router.Handle("/signup", http.HandlerFunc(App.Signup))
 	router.Handle("/login", http.HandlerFunc(App.Login))
-	router.Handle("/books", http.HandlerFunc(App.AllBooks))
-	router.Handle("/fav", http.HandlerFunc(App.Favorite))
+	router.Handle("/books", App.AuthMiddleWare(http.HandlerFunc(App.AllBooks)))
+	router.Handle("/favorite", App.AuthMiddleWare(http.HandlerFunc(App.Favorite)))
 	router.Handle("/book", App.AuthMiddleWare(http.HandlerFunc(App.GetBook)))
+	router.Handle("/user/favorite", App.AuthMiddleWare(http.HandlerFunc(App.GetFavorite)))
 
 	// Starting web server on port 8080
 	server := http.Server{

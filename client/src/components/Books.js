@@ -8,20 +8,33 @@ const Books = () => {
   const [books, setBooks] = useState([]);
   const { addToFavorites, removeFromFavorites, favorites, currentUser } =
     useAuth(); // Use currentUser instead of user
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // console.log("currentuser:1", currentUser);
     const fetchBooks = async () => {
+      if (!currentUser) {
+        // console.log("User is not logged in ");
+        return;
+      }
       const url = "http://localhost:8080/books";
       try {
-        const response = await axios.get(url);
+        const response = await axios.get(url, {
+          headers: { Authorization: `Bearer ${currentUser.token}` },
+        });
         setBooks(response.data);
+        setLoading(false);
       } catch (error) {
         console.error(error);
       }
     };
 
     fetchBooks();
-  }, []);
+  }, [currentUser]);
+
+  if (loading || !currentUser) {
+    return <h3 className="text-center">Loading wait...</h3>;
+  }
 
   // Toggle function to add or remove favorites
   const toggleFavorite = async (book) => {
@@ -36,21 +49,25 @@ const Books = () => {
       imgSource: book.ImgSource,
     };
 
-    const action = favorites.some((fav) => fav.book_id === book.Book_id)
-      ? "remove"
-      : "add";
+    const isFavorite = favorites.some((fav) => fav.Book_id === book.Book_id);
+    const action = isFavorite ? "remove" : "add";
 
-    // console.log("credentials", currentUser.email);
+    console.log("credentials", currentUser.email);
     // Access currentUser, not user
+    console.log(book.Book_id)
 
     try {
-      await axios.post("http://localhost:8080/fav", {
-        email: currentUser.email,
-        book_id: book.Book_id,
-        action: action,
-        title: book.Title,
-        imgSource: book.ImgSource,
-      });
+      await axios.post(
+        "http://localhost:8080/favorite",
+        {
+          email: currentUser.email,
+          book_id: book.Book_id,
+          action: action,
+          title: book.Title,
+          imgSource: book.ImgSource,
+        },
+        { headers: { Authorization: `Bearer ${currentUser.token}` } },
+      );
 
       if (action === "add") {
         addToFavorites(newFavorite); // Add to local state
@@ -63,7 +80,7 @@ const Books = () => {
   };
 
   return (
-    <div className="container">
+    <div className="container" style={{fontFamily: "monospace"}}>
       <h3>Most Popular Books</h3>
       <ScrollingCarousel>
         {books.map((book) => (
@@ -105,11 +122,10 @@ const Books = () => {
               style={{ cursor: "pointer" }}
             >
               <i
-                className={`fas fa-heart ${
-                  favorites.some((fav) => fav.book_id === book.Book_id)
+                className={`fas fa-heart ${favorites.some((fav) => fav.Book_id === book.Book_id)
                     ? "text-danger"
                     : "text-muted"
-                }`}
+                  }`}
               ></i>
             </span>
           </div>

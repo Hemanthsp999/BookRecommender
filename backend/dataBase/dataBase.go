@@ -98,7 +98,6 @@ func (Db *DataBase) GetUserByEmail(email string) (models.User, error) {
 	return user, nil
 }
 
-// BELOW CODE IS FOR GETTING ALL BOOKS FORM THE DATABASE
 func (Db *DataBase) GetAllBooks() ([]models.Book, error) {
 
 	var books []models.Book
@@ -168,8 +167,34 @@ func (Db *DataBase) AddFavorite(fav models.Favorite) error {
 	return nil
 }
 
-// Remove a favorite book from the database
-func (Db *DataBase) RemoveFavorite(bookId string, email string) error {
+func (Db *DataBase) GetFavorites(email string) ([]models.Favorite, error) {
+
+	var favs []models.Favorite
+
+	searchFav, err := Db.FavCollection.Find(context.TODO(), bson.D{})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	defer searchFav.Close(context.TODO())
+
+	for i := 0; searchFav.Next(context.TODO()); i++ {
+		var fav models.Favorite
+		if err := searchFav.Decode(&fav); err != nil {
+			log.Panic(err)
+			return nil, err
+		}
+		favs = append(favs, fav)
+	}
+
+	if err := searchFav.Err(); err != nil {
+		log.Panic(err)
+		return nil, err
+	}
+	return favs, nil
+}
+
+func (Db *DataBase) Remove_From_Fravoites(bookId string, email string) error {
 	_, err := Db.FavCollection.DeleteOne(context.TODO(), bson.M{"book_id": bookId, "email": email})
 	return err
 }
