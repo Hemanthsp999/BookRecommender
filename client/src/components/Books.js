@@ -6,7 +6,7 @@ import { useAuth } from "./authenticate/AuthContext"; // Assuming useAuth for fa
 
 const Books = () => {
   const [books, setBooks] = useState([]);
-  const { addToFavorites, removeFromFavorites, favorites } = useAuth();
+  const { addToFavorites, removeFromFavorites, favorites, currentUser } = useAuth(); // Use currentUser instead of user
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -22,17 +22,40 @@ const Books = () => {
     fetchBooks();
   }, []);
 
-  const toggleFavorite = (book) => {
+  // Toggle function to add or remove favorites
+  const toggleFavorite = async (book) => {
+    if (!currentUser) {
+      console.error("User is not logged in");
+      return; // Prevent action if user is not logged in
+    }
+
     const newFavorite = {
-      id: book.Book_id,
+      book_id: book.Book_id, // Ensure correct property name
       title: book.Title,
-      imageUrl: book.ImgSource, // Store image and title for favorites
+      imgSource: book.ImgSource, // Ensure correct property name for image
     };
 
-    if (favorites.some((fav) => fav.id === book.Book_id)) {
-      removeFromFavorites(book.Book_id); // Remove if already a favorite
-    } else {
-      addToFavorites(newFavorite); // Add if not a favorite
+    const action = favorites.some((fav) => fav.book_id === book.Book_id)
+      ? "remove"
+      : "add";
+
+    console.log("credentials", currentUser.username); // Access currentUser, not user
+
+    try {
+      await axios.post("http://localhost:8080/fav", {
+        book_id: book.Book_id,
+        action: action,
+        title: book.Title,
+        imgSource: book.ImgSource,
+      });
+
+      if (action === "add") {
+        addToFavorites(newFavorite); // Add to local state
+      } else {
+        removeFromFavorites(book.Book_id); // Remove from local state
+      }
+    } catch (error) {
+      console.error("Failed to update favorites", error);
     }
   };
 
@@ -57,15 +80,21 @@ const Books = () => {
               }}
             >
               <img
-                // className="img-fluid rounded mx-2 img-hover img-center"
                 className="card-img-top mx-3"
                 src={book.ImgSource}
-                alt={book.title}
-                style={{ height: "200px", width: "150px", objectFit: "cover", borderRadius: "10px" }}
+                alt={book.Title} // Correct property for title
+                style={{
+                  height: "200px",
+                  width: "150px",
+                  objectFit: "cover",
+                  borderRadius: "10px",
+                }}
               />
             </Link>
             <div className="card-body text-center text-wrap text-break">
-              <h5 className="card-title" style={{maxWidth: "150px"}}>{book.Title}</h5>
+              <h5 className="card-title" style={{ maxWidth: "150px" }}>
+                {book.Title}
+              </h5>
             </div>
             <span
               className="position-absolute top-0 end-0 m-2 p-1 bg-light rounded-circle"
@@ -73,7 +102,11 @@ const Books = () => {
               style={{ cursor: "pointer" }}
             >
               <i
-                className={`fas fa-heart ${favorites.some((fav) => fav.id === book.Book_id) ? "text-danger" : "text-muted"}`}
+                className={`fas fa-heart ${
+                  favorites.some((fav) => fav.book_id === book.Book_id)
+                    ? "text-danger"
+                    : "text-muted"
+                }`}
               ></i>
             </span>
           </div>
@@ -84,3 +117,4 @@ const Books = () => {
 };
 
 export default Books;
+

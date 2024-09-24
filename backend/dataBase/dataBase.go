@@ -127,20 +127,16 @@ func (Db *DataBase) GetAllBooks() ([]models.Book, error) {
 	return books, err
 }
 
-func (Db *DataBase) GetFavourites(Id *models.Book) (*mongo.Collection, error) {
+// Add a favorite book to the database
+func (Db *DataBase) AddFavorite(fav models.Favorite) error {
+	_, err := Db.FavCollection.InsertOne(context.TODO(), fav)
+	return err
+}
 
-	favBookFind := Db.BooksCollection.FindOne(context.TODO(), Id)
-	if favBookFind == nil {
-		favBookInsert, err := Db.FavCollection.InsertOne(context.TODO(), Id)
-		if err != nil {
-			log.Panic(err)
-		}
-
-		DecodeJson, _ := json.Marshal(favBookInsert)
-		fmt.Println(DecodeJson)
-		fmt.Println(favBookInsert.InsertedID)
-	}
-	return &mongo.Collection{}, nil
+// Remove a favorite book from the database
+func (Db *DataBase) RemoveFavorite(bookId string, email string) error {
+	_, err := Db.FavCollection.DeleteOne(context.TODO(), bson.M{"book_id": bookId, "email": email})
+	return err
 }
 
 func (Db *DataBase) GetBookById(bookName string) (models.Book, error) {

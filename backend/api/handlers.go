@@ -53,6 +53,56 @@ func (App *Application) Home(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(decodedData)
 }
 
+func (App *Application) Favorite(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	defer r.Body.Close()
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Unable to read body", http.StatusInternalServerError)
+		return
+	}
+
+	var jsonDatamap map[string]interface{}
+	if err := json.Unmarshal(body, &jsonDatamap); err != nil {
+		http.Error(w, "Error in decoding JSON", http.StatusBadRequest)
+		return
+	}
+
+	email, _ := jsonDatamap["email"].(string)
+	bookId, _ := jsonDatamap["book_id"].(string)
+	title, _ := jsonDatamap["title"].(string)
+	imgSource, _ := jsonDatamap["imgSource"].(string)
+	action, _ := jsonDatamap["action"].(string)
+
+	book := models.Favorite{
+		Email:     email,
+		Book_id:   bookId,
+		Title:     title,
+		ImgSource: imgSource,
+	}
+
+	if action == "add" {
+		err = database.Db.AddFavorite(book)
+		if err != nil {
+			http.Error(w, "Unable to add favorite", http.StatusInternalServerError)
+			return
+		}
+	} else if action == "remove" {
+		err = database.Db.RemoveFavorite(bookId, email)
+		if err != nil {
+			http.Error(w, "Unable to remove favorite", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
 func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {

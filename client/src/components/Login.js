@@ -20,7 +20,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const fetchCredentials = await axios.post(URL, {email, password});
+      const fetchCredentials = await axios.post(URL, { email, password });
       const response = await fetchCredentials.data;
       if (fetchCredentials.status >= 400 && fetchCredentials.status <= 499) {
         setAlertClassName("alert-danger");
@@ -32,19 +32,21 @@ const Login = () => {
       } else {
         login(response.token);
         login(response.username);
-        localStorage.setItem("token", response.token)
-        localStorage.setItem("username", response.username)
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("username", response.username);
+        localStorage.setItem("email", response.email);
+        console.log("Email: ",fetchCredentials.data.email)
         navigate("/");
         setAlertMessage("User is Authenticated");
         setAlertClassName("d-none");
       }
     } catch (e) {
       setAlertClassName("alert-danger");
-      setAlertMessage("Error in authentication")
-      setTimeout(() =>{
+      setAlertMessage("Error in authentication");
+      setTimeout(() => {
         setAlertClassName("d-none");
         setAlertMessage("");
-      }, 2000)
+      }, 2000);
     }
 
     // SET STATE TO NULL AFTER SUBMITTING THE FORM
@@ -87,12 +89,12 @@ const Login = () => {
         <hr />
 
         <div className="row">
-        <input type="submit" className="btn btn-primary" value="Login" />
+          <input type="submit" className="btn btn-primary" value="Login" />
         </div>
         <div className="row-sm-4 text-center">
           <Link
             to={"/forgotPassword"}
-            style={{ textDecoration: "none"}}
+            style={{ textDecoration: "none" }}
             className="btn btn-link"
           >
             Forgot Password?

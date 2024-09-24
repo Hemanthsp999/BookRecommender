@@ -38,6 +38,7 @@ func main() {
 	router.Handle("/signup", http.HandlerFunc(App.Signup))
 	router.Handle("/login", http.HandlerFunc(App.Login))
 	router.Handle("/books", http.HandlerFunc(App.AllBooks))
+	router.Handle("/fav", http.HandlerFunc(App.Favorite))
 	router.Handle("/book", App.AuthMiddleWare(http.HandlerFunc(App.GetBook)))
 
 	// Starting web server on port 8080

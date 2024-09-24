@@ -21,6 +21,7 @@ function App() {
     location.pathname === "/books" ||
     location.pathname === "/genre";
 
+
   const HandleOnSubmit = async (e) => {
     e.preventDefault();
     const URL = "http://localhost:8080/book";
