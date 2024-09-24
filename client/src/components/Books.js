@@ -6,7 +6,8 @@ import { useAuth } from "./authenticate/AuthContext"; // Assuming useAuth for fa
 
 const Books = () => {
   const [books, setBooks] = useState([]);
-  const { addToFavorites, removeFromFavorites, favorites, currentUser } = useAuth(); // Use currentUser instead of user
+  const { addToFavorites, removeFromFavorites, favorites, currentUser } =
+    useAuth(); // Use currentUser instead of user
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -30,19 +31,21 @@ const Books = () => {
     }
 
     const newFavorite = {
-      book_id: book.Book_id, // Ensure correct property name
+      book_id: book.Book_id,
       title: book.Title,
-      imgSource: book.ImgSource, // Ensure correct property name for image
+      imgSource: book.ImgSource,
     };
 
     const action = favorites.some((fav) => fav.book_id === book.Book_id)
       ? "remove"
       : "add";
 
-    console.log("credentials", currentUser.username); // Access currentUser, not user
+    // console.log("credentials", currentUser.email);
+    // Access currentUser, not user
 
     try {
       await axios.post("http://localhost:8080/fav", {
+        email: currentUser.email,
         book_id: book.Book_id,
         action: action,
         title: book.Title,
@@ -117,4 +120,3 @@ const Books = () => {
 };
 
 export default Books;
-

@@ -86,6 +86,7 @@ func (App *Application) Favorite(w http.ResponseWriter, r *http.Request) {
 		ImgSource: imgSource,
 	}
 
+	// check if action is "add" then insert or update the Database.
 	if action == "add" {
 		err = database.Db.AddFavorite(book)
 		if err != nil {
@@ -93,6 +94,7 @@ func (App *Application) Favorite(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if action == "remove" {
+		// if action is "remove" then the Book will be removed from Database
 		err = database.Db.RemoveFavorite(bookId, email)
 		if err != nil {
 			http.Error(w, "Unable to remove favorite", http.StatusInternalServerError)
@@ -300,5 +302,5 @@ func (App *Application) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"token": token, "username": db_user.FirstName})
+	json.NewEncoder(w).Encode(map[string]string{"token": token, "username": db_user.FirstName, "email": db_user.Email})
 }

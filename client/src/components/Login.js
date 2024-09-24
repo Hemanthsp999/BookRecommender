@@ -30,12 +30,11 @@ const Login = () => {
           setAlertMessage("");
         }, 2000);
       } else {
-        login(response.token);
-        login(response.username);
+        login(response)
+        console.log(response.email)
         localStorage.setItem("token", response.token);
         localStorage.setItem("username", response.username);
         localStorage.setItem("email", response.email);
-        console.log("Email: ",fetchCredentials.data.email)
         navigate("/");
         setAlertMessage("User is Authenticated");
         setAlertClassName("d-none");

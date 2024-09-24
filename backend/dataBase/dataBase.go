@@ -128,9 +128,44 @@ func (Db *DataBase) GetAllBooks() ([]models.Book, error) {
 }
 
 // Add a favorite book to the database
+// Add or update a favorite book in the database
 func (Db *DataBase) AddFavorite(fav models.Favorite) error {
-	_, err := Db.FavCollection.InsertOne(context.TODO(), fav)
-	return err
+	filter := bson.M{"email": fav.Email, "book_id": fav.Book_id}
+
+	// Try to find the existing favorite in the collection
+	var existingFav models.Favorite
+	err := Db.FavCollection.FindOne(context.TODO(), filter).Decode(&existingFav)
+
+	if err == mongo.ErrNoDocuments {
+		// If no favorite exists, insert a new one
+		_, insertErr := Db.FavCollection.InsertOne(context.TODO(), fav)
+		if insertErr != nil {
+			log.Printf("Failed to insert favorite: %v", insertErr)
+			return insertErr
+		}
+		log.Printf("Inserted new favorite for email: %s, book_id: %s", fav.Email, fav.Book_id)
+	} else if err == nil {
+		// If a favorite exists, update it
+		update := bson.M{
+			"$set": bson.M{
+				"title":     fav.Title,
+				"imgSource": fav.ImgSource,
+			},
+		}
+
+		_, updateErr := Db.FavCollection.UpdateOne(context.TODO(), filter, update)
+		if updateErr != nil {
+			log.Printf("Failed to update favorite: %v", updateErr)
+			return updateErr
+		}
+		log.Printf("Updated favorite for email: %s, book_id: %s", fav.Email, fav.Book_id)
+	} else {
+		// If there's another error (not related to no documents found), return it
+		log.Printf("Error occurred while finding favorite: %v", err)
+		return err
+	}
+
+	return nil
 }
 
 // Remove a favorite book from the database

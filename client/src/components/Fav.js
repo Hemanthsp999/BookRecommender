@@ -1,12 +1,38 @@
 import { useAuth } from "./authenticate/AuthContext";
+import axios from "axios";
 import { Link } from "react-router-dom";
 
 const Favorites = () => {
-  const { favorites, removeFromFavorites } = useAuth();
+  const { favorites, removeFromFavorites, currentUser } = useAuth();
 
   if (favorites.length === 0) {
     return <p>No favorite books yet.</p>;
   }
+  const toggleFavorite = async (book) => {
+    if (!currentUser) {
+      console.error("User is not logged in");
+      return; // Prevent action if user is not logged in
+    }
+
+    const action = "remove";
+
+    try {
+      await axios.post("http://localhost:8080/fav", {
+        email: currentUser.email,
+        book_id: book.book_id,
+        action: action,
+        title: book.Title,
+        imgSource: book.ImgSource,
+      });
+
+      if (action === "remove") {
+        console.log(`Removing book with ID: ${book.book_id}`);
+        removeFromFavorites(book.book_id);
+      }
+    } catch (error) {
+      console.error("Failed to update favorites", error);
+    }
+  };
 
   return (
     <div>
@@ -20,7 +46,10 @@ const Favorites = () => {
             <div key={book.book_id} className="col-md-3 mb-4">
               <div className="card">
                 {/* Book Image */}
-                <Link to={`/books/${book.book_id}`} className="text-decoration-none">
+                <Link
+                  to={`/books/${book.book_id}`}
+                  className="text-decoration-none"
+                >
                   <img
                     src={book.imgSource}
                     alt={book.title}
@@ -35,10 +64,7 @@ const Favorites = () => {
                   {/* Toggle Favorite Button */}
                   <button
                     className="btn btn-danger"
-                    onClick={() => {
-                      console.log(`Removing book with ID: ${book.book_id}`);
-                      removeFromFavorites(book.book_id); // Ensure book.book_id is being passed
-                    }}
+                    onClick={() => toggleFavorite(book)}
                   >
                     Remove from Favorites
                   </button>
@@ -53,4 +79,3 @@ const Favorites = () => {
 };
 
 export default Favorites;
-
