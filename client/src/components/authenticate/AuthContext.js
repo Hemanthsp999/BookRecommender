@@ -7,7 +7,10 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saveUser = localStorage.getItem("user");
+    return saveUser ? JSON.parse(saveUser) : null;
+  });
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
 

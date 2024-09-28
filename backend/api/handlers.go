@@ -78,11 +78,13 @@ func (App *Application) Favorite(w http.ResponseWriter, r *http.Request) {
 	title, _ := jsonDatamap["title"].(string)
 	imgSource, _ := jsonDatamap["imgSource"].(string)
 	action, _ := jsonDatamap["action"].(string)
+	genre, _ := jsonDatamap["genre"].(string)
 
 	book := models.Favorite{
 		Email:     email,
 		Book_id:   bookId,
 		Title:     title,
+		Genre:     genre,
 		ImgSource: imgSource,
 	}
 
@@ -112,6 +114,7 @@ func (App *Application) GetFavorite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	email := r.URL.Query().Get("email")
+	fmt.Println("User email", string(email))
 
 	FavoriteData, err := database.Db.GetFavorites(email)
 	if err != nil {
@@ -119,6 +122,24 @@ func (App *Application) GetFavorite(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("\nThis Data is retrieved from Favroite\t", FavoriteData)
 	json.NewEncoder(w).Encode(FavoriteData)
+}
+
+func (App *Application) Get_By_Genre(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "only Get method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	genre := r.URL.Query().Get("genre")
+	fmt.Println("Genre", genre)
+
+	getGenre, err := database.Db.Get_Book_By_Genre(genre)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	fmt.Println("\nThis is from Genre\t", getGenre)
+	json.NewEncoder(w).Encode(getGenre)
 }
 
 func (App *Application) AllBooks(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +170,7 @@ func (App *Application) GetBook(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	getBook, err := database.Db.GetBookById(title)
+	getBook, err := database.Db.GetBookByTitle(title)
 	if err != nil {
 		http.Error(w, "Book not found.", http.StatusNotFound)
 		panic(err)

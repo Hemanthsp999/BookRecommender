@@ -8,16 +8,16 @@ const Favorites = () => {
   const [fav, setFav] = useState([]);
 
   useEffect(() => {
-    console.log(currentUser.email);
+    // console.log("email", currentUser.email);
     const fetchFavorites = async () => {
       const url = "http://localhost:8080/user/favorite";
       try {
         const response = await axios.get(url, {
-          params: currentUser.email,
+          params: { email: currentUser.email },
           headers: { Authorization: `Bearer ${currentUser.token}` },
         });
         const favoriteData = Array.isArray(response.data) ? response.data : [];
-        console.log("Response", response.data);
+        // console.log("Response", response.data);
         setFav(favoriteData);
       } catch (error) {
         console.error(error);
@@ -65,7 +65,7 @@ const Favorites = () => {
   };
 
   return (
-    <div style={{fontFamily: "monospace"}}>
+    <div style={{ fontFamily: "monospace" }}>
       {fav.length === 0 ? (
         <h4>There's no book in Favorites</h4>
       ) : (
@@ -74,7 +74,6 @@ const Favorites = () => {
       <div className="row">
         {fav.map((book) => {
           // Log each book to ensure book_id exists
-          console.log("this is in func", book);
 
           return (
             <div key={book.Book_id} className="col-md-3 mb-4">

@@ -170,8 +170,9 @@ func (Db *DataBase) AddFavorite(fav models.Favorite) error {
 func (Db *DataBase) GetFavorites(email string) ([]models.Favorite, error) {
 
 	var favs []models.Favorite
+	filter := bson.M{"email": email}
 
-	searchFav, err := Db.FavCollection.Find(context.TODO(), bson.D{})
+	searchFav, err := Db.FavCollection.Find(context.TODO(), filter)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -199,7 +200,7 @@ func (Db *DataBase) Remove_From_Fravoites(bookId string, email string) error {
 	return err
 }
 
-func (Db *DataBase) GetBookById(bookName string) (models.Book, error) {
+func (Db *DataBase) GetBookByTitle(bookName string) (models.Book, error) {
 
 	// Get Book by Genre Type
 	var book models.Book
@@ -216,4 +217,30 @@ func (Db *DataBase) GetBookById(bookName string) (models.Book, error) {
 	}
 	fmt.Printf("The books is there %s\n", DecodeJson)
 	return book, nil
+}
+
+func (Db *DataBase) Get_Book_By_Genre(Genre string) ([]models.Book, error) {
+
+	var genreAction []models.Book
+	filter := bson.M{"genre": Genre}
+
+	cursorBook, err := Db.BooksCollection.Find(context.TODO(), filter)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for cursorBook.Next(context.TODO()) {
+		var genre models.Book
+		if err := cursorBook.Decode(&genre); err != nil {
+			log.Println("Error decoding book", err)
+			continue
+		}
+		genreAction = append(genreAction, genre)
+	}
+
+	if err := cursorBook.Err(); err != nil {
+		return nil, err
+	}
+
+	return genreAction, nil
 }
