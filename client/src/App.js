@@ -46,6 +46,7 @@ function App() {
           pdfLink: fetchData.Pdf_Path,
           author: fetchData.Author,
           stars: fetchData.Rating,
+          genre: fetchData.Genre
         },
       });
     } catch (e) {
