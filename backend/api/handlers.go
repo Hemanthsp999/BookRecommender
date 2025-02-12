@@ -131,7 +131,6 @@ func (App *Application) Get_By_Genre(w http.ResponseWriter, r *http.Request) {
 	}
 
 	genre := r.URL.Query().Get("genre")
-	fmt.Println("Genre", genre)
 
 	getGenre, err := database.Db.Get_Book_By_Genre(genre)
 	if err != nil {

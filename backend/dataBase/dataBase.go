@@ -46,13 +46,13 @@ func (Db *DataBase) Initialization() (*mongo.Client, error) {
 	// BELOW THIS IS USED FOR DATABASE NAME AND COLLECTION
 
 	// this is to store signup part
-	Db.userCollection = Db.client.Database("BookMatch").Collection("userData")
+	Db.userCollection = Db.client.Database("Database").Collection("userData")
 
 	// BELOW BLOCK IS USED FOR BOOKS COLLECTION
-	Db.BooksCollection = Db.client.Database("BookMatch").Collection("BookCollection")
+	Db.BooksCollection = Db.client.Database("Database").Collection("BookCollections")
 
 	// THIS IS USED FOR FAVOURITES COLLECTION IN DATABASE
-	Db.FavCollection = Db.client.Database("BookMatch").Collection("FavCollection")
+	Db.FavCollection = Db.client.Database("Database").Collection("FavCollection")
 
 	return &mongo.Client{}, nil
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth, AuthProvider } from "./components/authenticate/AuthContext";
 import { Col, Container, Nav, Form, Navbar, Row } from "react-bootstrap";
@@ -21,6 +21,22 @@ function App() {
     location.pathname === "/books" ||
     location.pathname === "/genre";
 
+  useEffect(() => {
+    if (!currentUser || !currentUser.token) {
+      setAlertMessage("Session got expired, Please Login");
+      setAlertClassName("alert-danger");
+      setTimeout(() => {
+        setAlertMessage("");
+        setAlertClassName("d-none");
+      }, 3000)
+      console.log(currentUser)
+      console.log("session got expired");
+    } else {
+      setAlertClassName("d-none")
+      setAlertMessage("")
+      console.log("user logged in");
+    }
+  }, [currentUser]);
 
   const HandleOnSubmit = async (e) => {
     e.preventDefault();
@@ -46,7 +62,7 @@ function App() {
           pdfLink: fetchData.Pdf_Path,
           author: fetchData.Author,
           stars: fetchData.Rating,
-          genre: fetchData.Genre
+          genre: fetchData.Genre,
         },
       });
     } catch (e) {

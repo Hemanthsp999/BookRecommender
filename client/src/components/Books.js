@@ -10,6 +10,7 @@ const Books = () => {
   const [fiction, setFiction] = useState([]);
   const [comedy, setComedy] = useState([]);
   const [thriller, setThriller] = useState([]);
+  const [fantasy, setfantasy] = useState([]);
   const { addToFavorites, removeFromFavorites, favorites, currentUser } =
     useAuth(); // Use currentUser instead of user
   const [loading, setLoading] = useState(true);
@@ -18,16 +19,32 @@ const Books = () => {
     const url = "http://localhost:8080/genre";
     const fetchActionBooks = async () => {
       if (!currentUser) {
-        // console.log("User is not logged in ");
         return;
       }
       try {
+        console.log("email: ",currentUser.email)
         const genre = "Action";
         const response = await axios.get(url, {
           params: { genre },
           headers: { Authorization: `Bearer ${currentUser.token}` },
         });
         setActionBooks(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    const fetchFantasyBooks = async () => {
+      if (!currentUser) {
+        return;
+      }
+      try {
+        const genre = "Fantasy";
+        const response = await axios.get(url, {
+          params: { genre },
+          headers: { Authorization: `Bearer ${currentUser.token}` },
+        });
+        setfantasy(response.data);
         setLoading(false);
       } catch (error) {
         console.error(error);
@@ -40,7 +57,7 @@ const Books = () => {
         return;
       }
       try {
-        const genre = "Science-Fiction";
+        const genre = "Fiction";
         const response = await axios.get(url, {
           params: { genre },
           headers: { Authorization: `Bearer ${currentUser.token}` },
@@ -58,7 +75,7 @@ const Books = () => {
         return;
       }
       try {
-        const genre = "self-help";
+        const genre = "Self-Help";
         const response = await axios.get(url, {
           params: { genre },
           headers: { Authorization: `Bearer ${currentUser.token}` },
@@ -109,6 +126,7 @@ const Books = () => {
     fetchGenBooks();
     fetchComedyBooks();
     fetchThrillerBooks();
+    fetchFantasyBooks();
   }, [currentUser]);
 
   if (loading || !currentUser) {
@@ -378,6 +396,61 @@ const Books = () => {
         <h4>Thriller Books</h4>
         <ScrollingCarousel>
           {thriller.map((book) => (
+            <div
+              key={book.Book_id}
+              style={{ position: "relative" }}
+              className="card mx-2"
+            >
+              <Link
+                to={`/books/${book.Book_id}`}
+                state={{
+                  title: book.Title,
+                  pdfLink: book.Pdf_Path,
+                  author: book.Author,
+                  stars: book.Rating,
+                  genre: book.Genre,
+                }}
+              >
+                <img
+                  className="card-img-top mx-3"
+                  src={book.ImgSource}
+                  alt={book.Title} // Correct property for title
+                  style={{
+                    height: "200px",
+                    width: "150px",
+                    objectFit: "cover",
+                    borderRadius: "10px",
+                  }}
+                />
+              </Link>
+              <div className="card-body text-center text-wrap text-break">
+                <h5 className="card-title" style={{ maxWidth: "150px" }}>
+                  {book.Title}
+                </h5>
+              </div>
+              <span
+                className="position-absolute top-0 end-0 m-2 p-1 bg-light rounded-circle"
+                onClick={() => toggleFavorite(book)}
+                style={{ cursor: "pointer" }}
+              >
+                <i
+                  className={`fas fa-heart ${
+                    favorites.some((fav) => fav.Book_id === book.Book_id)
+                      ? "text-danger"
+                      : "text-muted"
+                  }`}
+                ></i>
+              </span>
+            </div>
+          ))}
+        </ScrollingCarousel>
+      </div>
+
+
+      <div className="row mt-5">
+        <h4>Fantasy Books</h4>
+        <ScrollingCarousel>
+          {fantasy.map((book) => (
             <div
               key={book.Book_id}
               style={{ position: "relative" }}
